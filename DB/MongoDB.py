@@ -11,7 +11,7 @@ db = cluster["6733"]
 collection = db["6733"]
 
 post1 = {"_id": 5, "class": "ricky", "timestame": "2020"}
-
+#collection.insert_one(post1)
 #collection.insert_many([post1, post2, post3])  # insert many data to MongoDB
 results = collection.find({"_id": 5})       # find all the data which ID is 5
 #print(results)
