@@ -7,6 +7,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from functools import wraps
 from app.forms import SearchForm
+from app import search_model,api
+from flask_restplus import Resource
+
+
 
 def token_required(f):
     @wraps(f)
@@ -114,6 +118,8 @@ def search_for():
     return render_template('search.html', form=form)
 
 
+
+
 @app.route('/stastic', methods=['GET'])
 @token_required
 def stastic(current_user):
@@ -138,7 +144,41 @@ def stastic(current_user):
     return jsonify({'users': output})
 
 
+@api.route('/search_json')
+class SearchResults(Resource):
+    @api.expect(search_model,validate=True)
+    def post(self):
+        data = request.get_json()
+        #check data
+        token = data['token']
+        if not token:
+            return make_response(jsonify({'message': 'Token is missing!'}), 401)
+        try:
+            _data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(public_id=_data['public_id']).first()
+        except:
+            return make_response(jsonify({'message': 'Token is invalid'}), 401)
 
+        location = data['location']
+        area = data['area']
+        type_room = data['type_room']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        guest = data['guest']
+        price_1 = data['price_1']
+        price_2 = data['price_2']
+        _uid = current_user.public_id
+        temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
+        'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2,
+        'user_id': _uid}
 
+            # first add a admin manully that control other user
+        new_op = Oprecord(user_id = current_user.public_id, location=location, area=area,
+            type_room=type_room, start_date=start_date, end_date=end_date,guest=guest,
+            price_1=price_1, price_2=price_2)
+        db.session.add(new_op)
+        db.session.commit()
+
+        return jsonify(temp_dic)
 
 
