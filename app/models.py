@@ -10,7 +10,7 @@ class User(db.Model):
 
 class Oprecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
+    user_id = db.Column(db.String(50))
     location = db.Column(db.String(50))
     area = db.Column(db.String(50))
     type_room = db.Column(db.String(50))

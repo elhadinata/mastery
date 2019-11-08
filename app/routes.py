@@ -83,7 +83,9 @@ def login():
 
 
 
+# this part should receive json text, it just a temple now
 @app.route('/search', methods=['GET', 'POST'])
+#@token_required
 def search_for():
     form = SearchForm(request.form)
     print(form.validate_on_submit())
@@ -97,9 +99,46 @@ def search_for():
         guest = form.guest.data
         price_1 = form.price_1.data
         price_2 = form.price_2.data
-        return jsonify({'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
+        temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
             'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2
-            })
+            }
+
+        # first add a admin manully that control other user
+        new_op = Oprecord(user_id = "current_user.public_id", location=location, area=area,
+        	type_room=type_room, start_date=start_date, end_date=end_date,guest=guest,
+        	price_1=price_1, price_2=price_2)
+        db.session.add(new_op)
+        db.session.commit()
+
+        return jsonify(temp_dic)
     return render_template('search.html', form=form)
+
+
+@app.route('/stastic', methods=['GET'])
+@token_required
+def stastic(current_user):
+    if not current_user.admin:
+        return jsonify({'message': 'Non-ADMIN user cannot performe that function'})
+    ops = Oprecord.query.all()
+    output = []
+    for op in ops:
+        op_data = {}
+        op_data['id'] = op.id
+        op_data['user_id'] = op.user_id
+        op_data['location'] = op.location
+        op_data['area'] = op.area
+        op_data['type_room'] = op.type_room
+        op_data['start_date'] = op.start_date
+        op_data['end_date'] = op.end_date
+        op_data['guest'] = op.guest
+        op_data['price_1'] = op.price_1
+        op_data['price_2'] = op.price_2
+        op_data['time'] = op.time_stamp
+        output.append(op_data)
+    return jsonify({'users': output})
+
+
+
+
 
 
