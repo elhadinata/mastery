@@ -72,6 +72,8 @@ def get_one_user(current_user, public_id):
     user_data['admin'] = user.admin
     return jsonify({'user': user_data})
 
+
+
 @app.route('/login', methods=['POST'])
 def login():
     auth = request.authorization
