@@ -6,6 +6,9 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+flask-wtf = "*"
+flask = "*"
+flask-sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"
