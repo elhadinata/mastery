@@ -30,16 +30,17 @@ def token_required(f):
     return decorated
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
-    data = request.get_json()
-    hashed_password = generate_password_hash(data['password'], method='sha256')
-    # first add a admin manully that control other user
-    new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'New user created'})
-
+	if request.method == 'POST':
+	    data = request.get_json()
+	    hashed_password = generate_password_hash(data['password'], method='sha256')
+	    # first add a admin manully that control other user
+	    new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+	    db.session.add(new_user)
+	    db.session.commit()
+	    return jsonify({'message': 'New user created'})
+	return render_template('register.html')
 
 @app.route('/user', methods=['GET'])
 @token_required
@@ -91,12 +92,11 @@ def login():
 
 # this part should receive json text, it just a temple now
 @app.route('/search', methods=['GET', 'POST'])
-#@token_required
+@token_required
 def search_for():
     form = SearchForm(request.form)
     print(form.validate_on_submit())
     if form.validate_on_submit():
-
         location = form.location.data
         area = form.area.data
         type_room = form.type_room.data
@@ -108,14 +108,12 @@ def search_for():
         temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
             'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2
             }
-
         # first add a admin manully that control other user
         new_op = Oprecord(user_id = "current_user.public_id", location=location, area=area,
         	type_room=type_room, start_date=start_date, end_date=end_date,guest=guest,
         	price_1=price_1, price_2=price_2)
         db.session.add(new_op)
         db.session.commit()
-
         return jsonify(temp_dic)
     return render_template('search.html', form=form)
 

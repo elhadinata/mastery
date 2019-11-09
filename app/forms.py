@@ -12,3 +12,5 @@ class SearchForm(FlaskForm):
 	price_1 = StringField('Price from')
 	price_2 = StringField('Price to')
 	submit = SubmitField('Search')
+
+
