@@ -29,6 +29,10 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+@app.route('/index', methods=['GET'])
+def index():
+	return render_template('index.html')
+
 
 @app.route('/register', methods=['GET','POST'])
 def register():
