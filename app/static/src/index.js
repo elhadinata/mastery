@@ -1,5 +1,12 @@
 $(document).ready(()=>{
     console.log("ready");
+    if(sessionStorage.getItem('api-token')) {
+      console.log("already logged in");
+      $('#logout-btn').removeClass('hidden');
+      $('#login-btn').addClass('hidden');
+      $('#register-btn').addClass('hidden');
+      
+    }
     $('#login-btn').click(()=>{
         $('#login').modal('show');
     });
@@ -8,6 +15,12 @@ $(document).ready(()=>{
         $('#register').modal('show');
     });
 
+    $('#logout-btn').click(()=>{
+      $('#logout-btn').addClass('hidden');
+      $('#login-btn').removeClass('hidden');
+      $('#register-btn').removeClass('hidden');
+      sessionStorage.removeItem('api-token');
+    });
 
     $('#login-form').form({
         fields: {
@@ -58,28 +71,34 @@ $(document).ready(()=>{
 
     $('#login-form').on('submit', function(e) {
         e.preventDefault();
-        var i = $('#uname-login').val().trim().toString();
-        var j = $('#pass-login').val().trim().toString();
-        console.log(i);
-        console.log(j);
+        var username = $('#uname-login').val().trim().toString();
+        var password = $('#pass-login').val().trim().toString();
+        console.log(username);
+        console.log(password);
         
         $.ajax({
             url : '/login',
             type: 'POST',
             contentType: 'application/json',
+            beforeSend: function (xhr) {
+              xhr.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" + password));
+            },
             data: {
                 "name": $('#uname-login').val().trim(),
                 "password": $('#pass-login').val().trim(),
             },
             success: function (data) {
-                console.log(data);
-                $("#success-login").html(data);
+                // console.log(data.token);
                 $('#success-login').removeClass('hidden');
+                $('#logout-btn').removeClass('hidden');
+                $('#login-btn').addClass('hidden');
+                $('#register-btn').addClass('hidden');
+                sessionStorage.setItem('api-token', data.token);
             },
             error: function (jXHR, textStatus, errorThrown) {
-                console.log(errorThrown);
+                // console.log(errorThrown);
                 console.log(textStatus);
-                console.log(jXHR);
+                // console.log(jXHR);
                 
                 $('#fail-login').removeClass('hidden');
             }
