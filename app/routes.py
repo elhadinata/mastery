@@ -83,7 +83,7 @@ def get_one_user(current_user, public_id):
 def login():
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
-        return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+        return make_response('Empty fields - Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
     user = User.query.filter_by(name=auth.username).first()
     if not user:
         return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})

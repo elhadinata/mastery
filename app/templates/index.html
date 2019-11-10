@@ -6,6 +6,9 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
+        <!-- JQuery -->
+        <script src="{{ url_for('static',filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
+
         <!-- Semantic UI -->
         <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='semantic/dist/semantic.min.css') }}">
         <script
@@ -14,14 +17,228 @@
         crossorigin="anonymous"></script>
         <script src="{{ url_for('static',filename='semantic/dist/semantic.min.js') }}"></script>
 
-        <!-- JQuery -->
-        <script src="{{ url_for('static',filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
-
+        <!-- Our CSS File -->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/styles.css') }}">
+        
         <!-- Our Javascript File -->
         <script src="{{ url_for('static',filename='src/index.js') }}"></script>
-
+        
+        
     </head>
-    <body>
-        HELLO
+    <body class="pushable">
+
+        <!-- Following Menu -->
+        <div class="ui large top fixed menu transition hidden">
+            <div class="ui container">
+            <a class="active item">Home</a>
+            <a class="item">Work</a>
+            <a class="item">Company</a>
+            <a class="item">Careers</a>
+            <div class="right menu">
+                <div class="item">
+                <a class="ui button">Log in</a>
+                </div>
+                <div class="item">
+                <a class="ui primary button">Sign Up</a>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Menu -->
+        <div class="ui vertical inverted sidebar menu left">
+            <a class="active item">Home</a>
+            <a class="item">Work</a>
+            <a class="item">Company</a>
+            <a class="item">Careers</a>
+            <a class="item">Login</a>
+            <a class="item">Signup</a>
+        </div>
+        
+        
+        <!-- Page Contents -->
+        <div class="pusher">
+            <div class="ui inverted vertical masthead center aligned segment">
+        
+            <div class="ui container">
+                <div class="ui large secondary inverted pointing menu">
+                <a class="toc item">
+                    <i class="sidebar icon"></i>
+                </a>
+                <!-- <a class="active item">Home</a>
+                <a class="item">Work</a>
+                <a class="item">Company</a>
+                <a class="item">Careers</a> -->
+                <div class="right item">
+                    <a class="ui inverted button" id="login-btn">Log in</a>
+                    <a class="ui inverted button" id="register-btn">Sign Up</a>
+                    <a class="ui inverted button hidden" id="logout-btn">Logout</a>
+                    
+                </div>
+                </div>
+            </div>
+        
+            <div class="ui text container">
+                <h1 class="ui inverted header">
+                Mastery
+                </h1>
+                <h2>Find your Airbnb</h2>
+                <!-- <div class="ui huge primary button">Get Started <i class="right arrow icon"></i></div> -->
+            </div>
+        
+            </div>
+        
+            <div class="ui modal" id="login">
+                <i class="close icon"></i>
+                <div class="header">
+                    Login
+                </div>
+                <div class="content">
+                    <form class="ui form" id="login-form">
+                        <div class="field">
+                            <label>Username</label>
+                            <input id="uname-login" type="text" name="name" placeholder="Username">
+                        </div>
+                        <div class="field">
+                            <label>Password</label>
+                            <input id="pass-login" type="password" name="password" placeholder="Password">
+                        </div>
+                        <button class="ui button submit" type="submit">Submit</button>
+                        <div class="ui error message"></div>
+                        <div class="ui red message hidden" id="fail-login">
+                                
+                                <div class="header">
+                                    Your user login was unsuccessful.
+                                </div>
+                                <p>Please retry</p>
+                            </div>
+                        <div class="ui green message hidden" id="success-login">
+                            
+                            <div class="header">
+                                Your user login was successful.
+                            </div>
+                            <p>You are now logged-in.</p>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+
+            <div class="ui modal" id="register">
+                <i class="close icon"></i>
+                <div class="header">
+                    Register
+                </div>
+                <div class="content">
+                    <form class="ui form" id="register-form">
+                        <div class="field">
+                            <label>Username</label>
+                            <input type="text" name="name" placeholder="Username">
+                        </div>
+                        <div class="field">
+                            <label>Password</label>
+                            <input type="password" name="password" placeholder="Password">
+                        </div>
+                        <button class="ui button submit" type="submit">Submit</button>
+                        <div class="ui error message"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- <div class="ui vertical stripe segment">
+            <div class="ui middle aligned stackable grid container">
+                
+            </div>
+            </div> -->
+        
+            
+        </div>
+        
     </body>
+    <style>
+        .hidden.menu {
+            display: none;
+            }
+        
+            .masthead.segment {
+            min-height: 100vh;
+            padding: 1em 0em;
+            }
+            .masthead .logo.item img {
+            margin-right: 1em;
+            }
+            .masthead .ui.menu .ui.button {
+            margin-left: 0.5em;
+            }
+            .masthead h1.ui.header {
+            margin-top: 3em;
+            margin-bottom: 0em;
+            font-size: 4em;
+            font-weight: normal;
+            }
+            .masthead h2 {
+            font-size: 1.7em;
+            font-weight: normal;
+            }
+        
+            .ui.vertical.stripe {
+            padding: 8em 0em;
+            }
+            .ui.vertical.stripe h3 {
+            font-size: 2em;
+            }
+            .ui.vertical.stripe .button + h3,
+            .ui.vertical.stripe p + h3 {
+            margin-top: 3em;
+            }
+            .ui.vertical.stripe .floated.image {
+            clear: both;
+            }
+            .ui.vertical.stripe p {
+            font-size: 1.33em;
+            }
+            .ui.vertical.stripe .horizontal.divider {
+            margin: 3em 0em;
+            }
+        
+            .quote.stripe.segment {
+            padding: 0em;
+            }
+            .quote.stripe.segment .grid .column {
+            padding-top: 5em;
+            padding-bottom: 5em;
+            }
+        
+            .footer.segment {
+            padding: 5em 0em;
+            }
+        
+            .secondary.pointing.menu .toc.item {
+            display: none;
+            }
+        
+            @media only screen and (max-width: 700px) {
+            .ui.fixed.menu {
+                display: none !important;
+            }
+            .secondary.pointing.menu .item,
+            .secondary.pointing.menu .menu {
+                display: none;
+            }
+            .secondary.pointing.menu .toc.item {
+                display: block;
+            }
+            .masthead.segment {
+                min-height: 350px;
+            }
+            .masthead h1.ui.header {
+                font-size: 2em;
+                margin-top: 1.5em;
+            }
+            .masthead h2 {
+                margin-top: 0.5em;
+                font-size: 1.5em;
+            }
+        } 
+    </style>
 </html>
