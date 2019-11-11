@@ -151,27 +151,31 @@ def stastic(current_user):
 
 @api.route('/search_json')
 class SearchResults(Resource):
-    @api.expect(search_model,validate=True)
+    @api.expect(search_model,validate=False)
     def post(self):
-        data = request.get_json()
+        data = request.form.get('token')
         #check data
-        token = data['token']
+        print("\n\nSEBELUM\n\n")
+        
+        token = data
+
+        print(token)
         if not token:
             return make_response(jsonify({'message': 'Token is missing!'}), 401)
         try:
             _data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(public_id=_data['public_id']).first()
+            current_user = User.query.filter_by(public_id=_request.form.get('public_id')).first()
         except:
             return make_response(jsonify({'message': 'Token is invalid'}), 401)
 
-        location = data['location']
-        area = data['area']
-        type_room = data['type_room']
-        start_date = data['start_date']
-        end_date = data['end_date']
-        guest = data['guest']
-        price_1 = data['price_1']
-        price_2 = data['price_2']
+        location = request.form.get('location')
+        area = request.form.get('area')
+        type_room = request.form.get('type_room')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        guest = request.form.get('guest')
+        price_1 = request.form.get('price_1')
+        price_2 = request.form.get('price_2')
         _uid = current_user.public_id
         temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
         'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2,

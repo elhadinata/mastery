@@ -118,14 +118,15 @@ $(document).ready(()=>{
     $('#search-form').on('submit', function(e) {
       e.preventDefault();
       // console.log(e);
-      var location = e.target[1].value.toString();
-      var area= e.target[2].value.toString();
-      var type_room = e.target[3].value.toString();
-      var start_date = e.target[4].value.toString();
-      var end_date = e.target[5].value.toString();
-      var guest = e.target[6].value.toString();
-      var price_1 = e.target[7].value.toString();
-      var price_2 = e.target[8].value.toString();
+      let location = e.target[1].value.toString();
+      let area= e.target[2].value.toString();
+      let type_room = e.target[3].value.toString();
+      let start_date = e.target[4].value.toString();
+      let end_date = e.target[5].value.toString();
+      let guest = e.target[6].value.toString();
+      let price_1 = e.target[7].value.toString();
+      let price_2 = e.target[8].value.toString();
+      let token = sessionStorage.getItem('api-token');
       console.log(location);
       console.log(area);
       console.log(type_room);
@@ -135,13 +136,13 @@ $(document).ready(()=>{
       console.log(price_1);
       console.log(price_2);
       
-      console.log(sessionStorage.getItem('api-token').toString())
+      console.log(token)
       $.ajax({
         url : '/search_json',
         type: 'POST',
         cache: false,
         data: {
-          "token": sessionStorage.getItem('api-token').toString(),
+          "token": token,
           "location": location,
           "area": area,
           "type_room": type_room,
