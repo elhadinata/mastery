@@ -150,7 +150,7 @@
                     <div class="ui dividing header">
                         Search for Accomodation
                     </div>
-                    <form class="ui form" action="{{ url_for('search_for') }}" method="post">
+                    <form class="ui form" id="search-form" action="{{ url_for('search_for') }}" method="post">
                         {{ form.csrf_token }}
                         <!-- <div class="field">
                             <label>Location</label>
@@ -241,16 +241,17 @@
                                     <span style="color: red;">[{{ error }}]</span>
                                     {% endfor %}
                             </p>	
-                        
-                            <p> {{ form.submit() }}</p>
+                            <button class="ui primary button" type="submit">Submit</button>
+                            
+                            <!-- <p> {{ form.submit() }}</p>
                             {% for error in form.submit.errors %}
                                 <span style="color: red;">[{{ error }}]</span>
-                            {% endfor %}
+                            {% endfor %} -->
                     </form>
                 </div>
             </div>
         
-            <div class="pusher">
+            <div class="pusher" id="result">
                     <div class="ui inverted vertical masthead center aligned segment">
                 
                         <div class="ui text container">
@@ -427,15 +428,7 @@
             
         </div>
         <script type="text/javascript">
-            var csrf_token = "{{ form.csrf_token }}";
-        
-            $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
-                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
-                    }
-                }
-            });
+            
         </script>
     </body>
     <style>

@@ -115,4 +115,51 @@ $(document).ready(()=>{
             }
         });
     });
+    $('#search-form').on('submit', function(e) {
+      e.preventDefault();
+      // console.log(e);
+      var location = e.target[1].value.toString();
+      var area= e.target[2].value.toString();
+      var type_room = e.target[3].value.toString();
+      var start_date = e.target[4].value.toString();
+      var end_date = e.target[5].value.toString();
+      var guest = e.target[6].value.toString();
+      var price_1 = e.target[7].value.toString();
+      var price_2 = e.target[8].value.toString();
+      console.log(location);
+      console.log(area);
+      console.log(type_room);
+      console.log(start_date);
+      console.log(end_date);
+      console.log(guest);
+      console.log(price_1);
+      console.log(price_2);
+      
+      console.log(sessionStorage.getItem('api-token').toString())
+      $.ajax({
+        url : '/search_json',
+        type: 'POST',
+        cache: false,
+        data: {
+          "token": sessionStorage.getItem('api-token').toString(),
+          "location": location,
+          "area": area,
+          "type_room": type_room,
+          "start_date": start_date,
+          "end_date": end_date,
+          "guest": guest,
+          "price_1": price_1,
+          "price_2": price_2
+        },
+        success: function (data) {
+            console.log(data);
+            console.log("YASS");
+        },
+        error: function (jXHR, textStatus, errorThrown) {
+            // console.log(errorThrown);
+            console.log(textStatus);
+            // console.log(jXHR);
+        }
+    });
+    })
 });
