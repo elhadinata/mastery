@@ -145,17 +145,303 @@
                 </div>
             </div>
 
-            <!-- <div class="ui vertical stripe segment">
-            <div class="ui middle aligned stackable grid container">
-                
+            <div class="ui vertical stripe segment hidden" id="search">
+                <div class="ui text container">
+                    <div class="ui dividing header">
+                        Search for Accomodation
+                    </div>
+                    <form class="ui form" action="{{ url_for('search_for') }}" method="post">
+                        {{ form.csrf_token }}
+                        <!-- <div class="field">
+                            <label>Location</label>
+                            <div class="field">
+                                <input type="text" name="location" placeholder="Location">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Area</label>
+                            <div class="field">
+                                <input type="text" name="area" placeholder="Area">
+                            </div>
+                        </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Start</label>
+                                <div class="field">
+                                    <input type="date" name="area" placeholder="Area">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>End</label>
+                                <div class="field">
+                                    <input type="date" name="area" placeholder="Area">
+                                </div>
+                            </div>
+                        </div> -->
+                        <p>
+                                {{ form.location.label }}<br>
+                                {{ form.location(size=32) }}
+                                {% for error in form.location.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>
+                        
+                            <p>
+                                {{ form.area.label }}<br>
+                                {{ form.area(size=32) }}
+                                {% for error in form.area.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>
+                        
+                            <p>
+                                {{ form.type_room.label}}
+                                {{ form.type_room }}<br>
+                                {% for error in form.type_room.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>
+                        
+                            <p>
+                                {{ form.start_date.label }}<br>
+                                {{ form.start_date(size=32) }}
+                                {% for error in form.start_date.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>
+                        
+                            <p>
+                                {{ form.end_date.label }}<br>
+                                {{ form.end_date(size=32) }}
+                                {% for error in form.end_date.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>	
+                        
+                            <p>
+                                {{ form.guest.label }}<br>
+                                {{ form.guest(size=32) }}
+                                {% for error in form.guest.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>	
+                        
+                            <p>
+                                {{ form.price_1.label }}<br>
+                                {{ form.price_1(size=32) }}
+                                {% for error in form.price_1.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>	
+                        
+                            <p>
+                                {{ form.price_2.label }}<br>
+                                {{ form.price_2(size=32) }}
+                                 {% for error in form.price_2.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                            </p>	
+                        
+                            <p> {{ form.submit() }}</p>
+                            {% for error in form.submit.errors %}
+                                <span style="color: red;">[{{ error }}]</span>
+                            {% endfor %}
+                    </form>
+                </div>
             </div>
-            </div> -->
         
+            <div class="pusher">
+                    <div class="ui inverted vertical masthead center aligned segment">
+                
+                        <div class="ui text container">
+                            <h2 class="ui inverted header" id="result-header">
+                            Result
+                            </h2>
+                            <br/>
+<!--                             
+                            <div class="ui three column grid">
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                        <div class="ui container">
+                            <div class="ui link three cards">
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Matt Giampietro</div>
+                                    <div class="meta">
+                                        <a>Friends</a>
+                                    </div>
+                                    <div class="description">
+                                        Matthew is an interior designer living in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2013
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        75 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Molly</div>
+                                    <div class="meta">
+                                        <span class="date">Coworker</span>
+                                    </div>
+                                    <div class="description">
+                                        Molly is a personal assistant living in Paris.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2011
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        35 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Elyse</div>
+                                    <div class="meta">
+                                        <a>Coworker</a>
+                                    </div>
+                                    <div class="description">
+                                        Elyse is a copywriter working in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2014
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        151 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ui link three cards">
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Matt Giampietro</div>
+                                    <div class="meta">
+                                        <a>Friends</a>
+                                    </div>
+                                    <div class="description">
+                                        Matthew is an interior designer living in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2013
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        75 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Molly</div>
+                                    <div class="meta">
+                                        <span class="date">Coworker</span>
+                                    </div>
+                                    <div class="description">
+                                        Molly is a personal assistant living in Paris.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2011
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        35 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Elyse</div>
+                                    <div class="meta">
+                                        <a>Coworker</a>
+                                    </div>
+                                    <div class="description">
+                                        Elyse is a copywriter working in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2014
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        151 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             
         </div>
+        <script type="text/javascript">
+            var csrf_token = "{{ form.csrf_token }}";
         
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                    }
+                }
+            });
+        </script>
     </body>
     <style>
+        #result-header {
+            margin-top: 1.5em;
+        }
         .hidden.menu {
             display: none;
             }
@@ -176,6 +462,7 @@
             font-size: 4em;
             font-weight: normal;
             }
+            
             .masthead h2 {
             font-size: 1.7em;
             font-weight: normal;

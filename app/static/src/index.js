@@ -1,10 +1,19 @@
 $(document).ready(()=>{
     console.log("ready");
-    if(sessionStorage.getItem('api-token')) {
-      console.log("already logged in");
+
+    function login() {
+      $('#search').removeClass('hidden');
       $('#logout-btn').removeClass('hidden');
       $('#login-btn').addClass('hidden');
       $('#register-btn').addClass('hidden');
+    }
+
+    if(sessionStorage.getItem('api-token')) {
+      console.log("already logged in");
+      // $('#logout-btn').removeClass('hidden');
+      // $('#login-btn').addClass('hidden');
+      // $('#register-btn').addClass('hidden');
+      login();
       
     }
     $('#login-btn').click(()=>{
@@ -17,6 +26,7 @@ $(document).ready(()=>{
 
     $('#logout-btn').click(()=>{
       $('#logout-btn').addClass('hidden');
+      $('#search').addClass('hidden');
       $('#login-btn').removeClass('hidden');
       $('#register-btn').removeClass('hidden');
       sessionStorage.removeItem('api-token');
@@ -90,9 +100,10 @@ $(document).ready(()=>{
             success: function (data) {
                 // console.log(data.token);
                 $('#success-login').removeClass('hidden');
-                $('#logout-btn').removeClass('hidden');
-                $('#login-btn').addClass('hidden');
-                $('#register-btn').addClass('hidden');
+                // $('#logout-btn').removeClass('hidden');
+                // $('#login-btn').addClass('hidden');
+                // $('#register-btn').addClass('hidden');
+                login();
                 sessionStorage.setItem('api-token', data.token);
             },
             error: function (jXHR, textStatus, errorThrown) {

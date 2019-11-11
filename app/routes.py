@@ -31,7 +31,8 @@ def token_required(f):
 
 @app.route('/index', methods=['GET'])
 def index():
-	return render_template('index.html')
+    form = SearchForm(request.form)
+    return render_template('index.html', form=form)
 
 
 @app.route('/register', methods=['GET','POST'])
@@ -96,7 +97,7 @@ def login():
 
 # this part should receive json text, it just a temple now
 @app.route('/search', methods=['GET', 'POST'])
-@token_required
+# @token_required
 def search_for():
     form = SearchForm(request.form)
     print(form.validate_on_submit())
