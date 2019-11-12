@@ -123,10 +123,90 @@ $(document).ready(()=>{
             }
         });
     });
+    // ------------------------- Search -------------------------------------//
+    $('#search-form')
+    .form({
+      fields: {
+        location: {
+          identifier: 'location',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please enter the location'
+            }
+          ]
+        },
+        area: {
+          identifier: 'area',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please select at least two skills'
+            }
+          ]
+        },
+        type_room: {
+          identifier: 'type_room',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please select a room type'
+            }
+          ]
+        },
+        start_date: {
+          identifier: 'start_date',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please enter a Start Date'
+            }
+          ]
+        },
+        end_date: {
+          identifier: 'end_date',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please enter an End Date'
+            }
+          ]
+        },
+        guest: {
+          identifier: 'guest',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please specify number of guest'
+            }
+          ]
+        },
+        price_1: {
+          identifier: 'price_1',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please enter the price range'
+            }
+          ]
+        },
+        price_2: {
+          identifier: 'price_2',
+          rules: [
+            {
+              type   : 'empty',
+              prompt : 'Please enter the price range'
+            }
+          ]
+        },
+      }
+    });
+
     $('#search-form').on('submit', function(e) {
       e.preventDefault();
-      $( 'html, body' ).animate( { scrollTop: $('#result').offset().top }, 500 );
-      
+      if( $('#search-form').form('is valid')) {
+        $( 'html, body' ).animate( { scrollTop: $('#result').offset().top }, 500 );
+      }
 
       $('#result').animate( { scrollTop: 0 }, 0 );
       let location = e.target[1].value.toString();
