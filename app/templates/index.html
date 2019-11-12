@@ -133,11 +133,11 @@
                     <form class="ui form" id="register-form">
                         <div class="field">
                             <label>Username</label>
-                            <input type="text" name="name" placeholder="Username" id="uname-register">
+                            <input type="text" id="uname-register" name="name" placeholder="Username">
                         </div>
                         <div class="field">
                             <label>Password</label>
-                            <input type="password" name="password" placeholder="Password" id="pass-register">
+                            <input type="password" id="pass-register" name="password" placeholder="Password">
                         </div>
                         <button class="ui button submit" type="submit">Submit</button>
                         <div class="ui red message hidden" id="fail-register">
@@ -163,7 +163,7 @@
                     </div>
                     <form class="ui form" id="search-form" action="{{ url_for('search_for') }}" method="post">
                         {{ form.csrf_token }}
-                        <!-- <div class="field">
+                        <div class="field">
                             <label>Location</label>
                             <div class="field">
                                 <input type="text" name="location" placeholder="Location">
@@ -175,89 +175,51 @@
                                 <input type="text" name="area" placeholder="Area">
                             </div>
                         </div>
+                        <div class="field">
+
+                            <label>Type of Room</label>
+                            <select class="ui dropdown" name="type_room">
+                                <option value="">Select</option>
+                                <option value="1">Private room</option>
+                                <option value="2">Entire home/apt</option>
+                                <option value="3">Shared room</option>
+                            </select>
+                        </div>
                         <div class="two fields">
                             <div class="field">
                                 <label>Start</label>
                                 <div class="field">
-                                    <input type="date" name="area" placeholder="Area">
+                                    <input type="date" name="start_date" placeholder="Area">
                                 </div>
                             </div>
                             <div class="field">
                                 <label>End</label>
                                 <div class="field">
-                                    <input type="date" name="area" placeholder="Area">
+                                    <input type="date" name="end_date" placeholder="Area">
                                 </div>
                             </div>
-                        </div> -->
-                        <p>
-                                {{ form.location.label }}<br>
-                                {{ form.location(size=32) }}
-                                {% for error in form.location.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>
-                        
-                            <p>
-                                {{ form.area.label }}<br>
-                                {{ form.area(size=32) }}
-                                {% for error in form.area.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>
-                        
-                            <p>
-                                {{ form.type_room.label}}
-                                {{ form.type_room }}<br>
-                                {% for error in form.type_room.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>
-                        
-                            <p>
-                                {{ form.start_date.label }}<br>
-                                {{ form.start_date(size=32) }}
-                                {% for error in form.start_date.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>
-                        
-                            <p>
-                                {{ form.end_date.label }}<br>
-                                {{ form.end_date(size=32) }}
-                                {% for error in form.end_date.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>	
-                        
-                            <p>
-                                {{ form.guest.label }}<br>
-                                {{ form.guest(size=32) }}
-                                {% for error in form.guest.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>	
-                        
-                            <p>
-                                {{ form.price_1.label }}<br>
-                                {{ form.price_1(size=32) }}
-                                {% for error in form.price_1.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>	
-                        
-                            <p>
-                                {{ form.price_2.label }}<br>
-                                {{ form.price_2(size=32) }}
-                                 {% for error in form.price_2.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                            </p>	
-                            <button class="ui primary button" type="submit">Submit</button>
-                            
-                            <!-- <p> {{ form.submit() }}</p>
-                            {% for error in form.submit.errors %}
-                                <span style="color: red;">[{{ error }}]</span>
-                            {% endfor %} -->
+                        </div>
+                        <div class="field">
+                            <label>Guest</label>
+                            <div class="field">
+                                <input type="text" name="guest" placeholder="Number of Guest">
+                            </div>
+                        </div>
+                        <div class="two fields">
+                            <label>Price Range</label>
+                            <div class="field">
+                                <div class="field">
+                                    <input type="text" name="price_1" placeholder="From">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="field">
+                                    <input type="text" name="price_2" placeholder="To">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ui primary button" type="submit">Submit</button>
+                        <div class="ui error message"></div>
                     </form>
                 </div>
             </div>
@@ -267,7 +229,7 @@
                 
                         <div class="ui text container">
                             <h2 class="ui inverted header" id="result-header">
-                            Result
+                            You Searched For
                             </h2>
                             <br/>
 <!--                             

@@ -39,8 +39,12 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        password = request.form.get('password')
-        name = request.form.get('name')
+        name = request.form.get("name")
+        password = request.form.get("password")
+        print(name)
+        print(password)
+        # data = request.get_json()
+        # hashed_password = generate_password_hash(data['password'], method='sha256')
         hashed_password = generate_password_hash(password, method='sha256')
         # first add a admin manully that control other user
         new_user = User(public_id=str(uuid.uuid4()), name=name,
@@ -156,18 +160,13 @@ class SearchResults(Resource):
     @api.expect(search_model, validate=False)
     def post(self):
         data = request.form.get('token')
-        # check data
-        print("\n\nSEBELUM\n\n")
-
         token = data
-
-        print(token)
         if not token:
             return make_response(jsonify({'message': 'Token is missing!'}), 401)
         try:
             _data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
-                public_id=_request.form.get('public_id')).first()
+                public_id=_data['public_id']).first()
         except:
             return make_response(jsonify({'message': 'Token is invalid'}), 401)
 
