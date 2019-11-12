@@ -36,23 +36,19 @@ def index():
     return render_template('index.html', form=form)
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
-        name = request.form.get("name")
-        password = request.form.get("password")
-        print(name)
-        print(password)
-        # data = request.get_json()
-        # hashed_password = generate_password_hash(data['password'], method='sha256')
-        hashed_password = generate_password_hash(password, method='sha256')
+        data = request.get_json()
+        print(request.data)
+        hashed_password = generate_password_hash(data['password'], method='sha256')
         # first add a admin manully that control other user
-        new_user = User(public_id=str(uuid.uuid4()), name=name,
-                        password=hashed_password, admin=False)
+        new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'message': 'New user created'})
     return render_template('register.html')
+
 
 
 @app.route('/user', methods=['GET'])
