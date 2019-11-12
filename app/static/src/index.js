@@ -1,6 +1,6 @@
 $(document).ready(()=>{
     console.log("ready");
-
+    
     function login() {
       $('#search').removeClass('hidden');
       $('#logout-btn').removeClass('hidden');
@@ -117,7 +117,10 @@ $(document).ready(()=>{
     });
     $('#search-form').on('submit', function(e) {
       e.preventDefault();
-      // console.log(e);
+      $( 'html, body' ).animate( { scrollTop: $('#result').offset().top }, 500 );
+      
+
+      $('#result').animate( { scrollTop: 0 }, 0 );
       let location = e.target[1].value.toString();
       let area= e.target[2].value.toString();
       let type_room = e.target[3].value.toString();
@@ -127,16 +130,19 @@ $(document).ready(()=>{
       let price_1 = e.target[7].value.toString();
       let price_2 = e.target[8].value.toString();
       let token = sessionStorage.getItem('api-token');
-      console.log(location);
-      console.log(area);
-      console.log(type_room);
-      console.log(start_date);
-      console.log(end_date);
-      console.log(guest);
-      console.log(price_1);
-      console.log(price_2);
+      // console.log(location);
+      // console.log(area);
+      // console.log(type_room);
+      // console.log(start_date);
+      // console.log(end_date);
+      // console.log(guest);
+      // console.log(price_1);
+      // console.log(price_2);
       
-      console.log(token)
+      // console.log(token)
+
+      
+
       $.ajax({
         url : '/search_json',
         type: 'POST',

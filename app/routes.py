@@ -154,17 +154,12 @@ class SearchResults(Resource):
     @api.expect(search_model,validate=False)
     def post(self):
         data = request.form.get('token')
-        #check data
-        print("\n\nSEBELUM\n\n")
-        
         token = data
-
-        print(token)
         if not token:
             return make_response(jsonify({'message': 'Token is missing!'}), 401)
         try:
             _data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(public_id=_request.form.get('public_id')).first()
+            current_user = User.query.filter_by(public_id=_data['public_id']).first()
         except:
             return make_response(jsonify({'message': 'Token is invalid'}), 401)
 
