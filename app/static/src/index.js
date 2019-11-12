@@ -124,19 +124,20 @@ $(document).ready(() => {
     });
   });
 
-  $('#register-form').on('submit', function (e) {
+   $('#register-form').on('submit', function (e) {
     e.preventDefault();
-    var name = $('#uname-register').val().trim();
-    var password = $('#pass-register').val().trim();
-
+    var name = $('#uname-register').val().trim().toString();
+    var password = $('#pass-register').val().trim().toString();
+    var dddd = {
+        "name": name,
+        "password": password
+      };
+    var x = JSON.stringify(dddd);
     $.ajax({
       url: '/register',
       type: 'POST',
-      contentType: 'application/json;charset=UTF-8',
-      data: {
-        "name": name,
-        "password": password
-      },
+      contentType: 'application/json',
+      data: x,
       dataType: 'json',
       success: function (data) {
         console.log(name + " registered!")
