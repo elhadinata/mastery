@@ -115,6 +115,40 @@ $(document).ready(()=>{
             }
         });
     });
+
+    $('#register-form').on('submit', function(e) {
+      e.preventDefault();
+      var name = $('#uname-register').val().trim();
+      var password = $('#pass-register').val().trim();
+      console.log(name);
+      console.log(password);
+      
+      $.ajax({
+          url : '/register',
+          type: 'POST',
+          contentType: 'application/json',
+          data: {
+              "name": name,
+              "password": password
+          },
+          success: function (data) {
+              console.log(name + " registered!")
+              $('#success-register').removeClass('hidden');
+              // $('#register-btn').addClass('hidden');
+              // login();
+              // sessionStorage.setItem('api-token', data.token);
+          },
+          error: function (jXHR, textStatus, errorThrown) {
+              // console.log(errorThrown);
+              console.log("ERROR REGISTER")
+              console.log(textStatus);
+              // console.log(jXHR);
+              
+              $('#fail-register').removeClass('hidden');
+          }
+      });
+  });
+
     $('#search-form').on('submit', function(e) {
       e.preventDefault();
       // console.log(e);

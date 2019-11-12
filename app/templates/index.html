@@ -133,14 +133,25 @@
                     <form class="ui form" id="register-form">
                         <div class="field">
                             <label>Username</label>
-                            <input type="text" name="name" placeholder="Username">
+                            <input type="text" name="name" placeholder="Username" id="uname-register">
                         </div>
                         <div class="field">
                             <label>Password</label>
-                            <input type="password" name="password" placeholder="Password">
+                            <input type="password" name="password" placeholder="Password" id="pass-register">
                         </div>
                         <button class="ui button submit" type="submit">Submit</button>
-                        <div class="ui error message"></div>
+                        <div class="ui red message hidden" id="fail-register">
+                            <div class="header">
+                                Your user registration was unsuccessful.
+                            </div>
+                            <p>Please retry</p>
+                        </div>
+                        <div class="ui green message hidden" id="success-register">
+                            <div class="header">
+                                Your user registration was successful.
+                            </div>
+                            <p>Please log in</p>
+                        </div>
                     </form>
                 </div>
             </div>
