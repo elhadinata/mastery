@@ -106,18 +106,12 @@ $(document).ready(() => {
         "password": $('#pass-login').val().trim(),
       },
       success: function (data) {
-        // console.log(data.token);
         $('#success-login').removeClass('hidden');
-        // $('#logout-btn').removeClass('hidden');
-        // $('#login-btn').addClass('hidden');
-        // $('#register-btn').addClass('hidden');
         login();
         sessionStorage.setItem('api-token', data.token);
       },
       error: function (jXHR, textStatus, errorThrown) {
-        // console.log(errorThrown);
         console.log(textStatus);
-        // console.log(jXHR);
 
         $('#fail-login').removeClass('hidden');
       }
@@ -128,25 +122,24 @@ $(document).ready(() => {
     e.preventDefault();
     var name = $('#uname-register').val().trim().toString();
     var password = $('#pass-register').val().trim().toString();
-    var dddd = {
+
+    var json = {
         "name": name,
         "password": password
       };
-    var x = JSON.stringify(dddd);
+    json = JSON.stringify(json);
+
     $.ajax({
       url: '/register',
       type: 'POST',
       contentType: 'application/json',
-      data: x,
+      data: json,
       dataType: 'json',
       success: function (data) {
-        console.log(name + " registered!")
         $('#success-register').removeClass('hidden');
       },
       error: function (jXHR, textStatus, errorThrown) {
-        console.log("ERROR REGISTER")
         console.log(textStatus);
-
         $('#fail-register').removeClass('hidden');
       }
     });
@@ -248,34 +241,23 @@ $(document).ready(() => {
     let price_1 = e.target[7].value.toString();
     let price_2 = e.target[8].value.toString();
     let token = sessionStorage.getItem('api-token');
-    // console.log(location);
-    // console.log(area);
-    // console.log(type_room);
-    // console.log(start_date);
-    // console.log(end_date);
-    // console.log(guest);
-    // console.log(price_1);
-    // console.log(price_2);
-
-    // console.log(token)
-
-
-
+    var json = {
+      "token": token,
+      "location": location,
+      "area": area,
+      "type_room": type_room,
+      "start_date": start_date,
+      "end_date": end_date,
+      "guest": guest,
+      "price_1": price_1,
+      "price_2": price_2
+    };
+    json = JSON.stringify(json);
     $.ajax({
       url: '/search_json',
       type: 'POST',
       cache: false,
-      data: {
-        "token": token,
-        "location": location,
-        "area": area,
-        "type_room": type_room,
-        "start_date": start_date,
-        "end_date": end_date,
-        "guest": guest,
-        "price_1": price_1,
-        "price_2": price_2
-      },
+      data: json,
       success: function (data) {
         console.log(data);
         console.log("YASS");
