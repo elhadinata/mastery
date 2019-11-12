@@ -3,9 +3,21 @@ $(document).ready(()=>{
     
     function login() {
       $('#search').removeClass('hidden');
+      $('#result').removeClass('hidden');
       $('#logout-btn').removeClass('hidden');
       $('#login-btn').addClass('hidden');
       $('#register-btn').addClass('hidden');
+      $( 'html, body' ).animate( { scrollTop: $('#search').offset().top }, 500 );
+      
+    }
+
+    function logout() {
+      $('#logout-btn').addClass('hidden');
+      $('#search').addClass('hidden');
+      $('#result').addClass('hidden');
+      $('#login-btn').removeClass('hidden');
+      $('#register-btn').removeClass('hidden');
+      sessionStorage.removeItem('api-token');
     }
 
     if(sessionStorage.getItem('api-token')) {
@@ -25,11 +37,7 @@ $(document).ready(()=>{
     });
 
     $('#logout-btn').click(()=>{
-      $('#logout-btn').addClass('hidden');
-      $('#search').addClass('hidden');
-      $('#login-btn').removeClass('hidden');
-      $('#register-btn').removeClass('hidden');
-      sessionStorage.removeItem('api-token');
+      logout();
     });
 
     $('#login-form').form({
