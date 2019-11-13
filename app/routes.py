@@ -7,9 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 from functools import wraps
 from app.forms import SearchForm
-from app import search_model,api
+from app import search_model, api
 from flask_restplus import Resource
-
 
 
 def token_required(f):
@@ -23,28 +22,34 @@ def token_required(f):
             return jsonify({'message': 'Token is missing!'}), 401
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(public_id=data['public_id']).first()
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
         except:
             return jsonify({'message': 'Token is invalid'}), 401
         return f(current_user, *args, **kwargs)
     return decorated
 
+
 @app.route('/index', methods=['GET'])
 def index():
-	return render_template('index.html')
+    form = SearchForm(request.form)
+    return render_template('index.html', form=form)
 
 
 @app.route('/register', methods=['GET','POST'])
 def register():
-	if request.method == 'POST':
-	    data = request.get_json()
-	    hashed_password = generate_password_hash(data['password'], method='sha256')
-	    # first add a admin manully that control other user
-	    new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
-	    db.session.add(new_user)
-	    db.session.commit()
-	    return jsonify({'message': 'New user created'})
-	return render_template('register.html')
+    if request.method == 'POST':
+        data = request.get_json()
+        print(request.data)
+        hashed_password = generate_password_hash(data['password'], method='sha256')
+        # first add a admin manully that control other user
+        new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'New user created'})
+    return render_template('register.html')
+
+
 
 @app.route('/user', methods=['GET'])
 @token_required
@@ -62,6 +67,7 @@ def get_all_users(current_user):
         output.append(user_data)
     return jsonify({'users': output})
 
+
 @app.route('/user/<public_id>', methods=['GET'])
 @token_required
 def get_one_user(current_user, public_id):
@@ -78,7 +84,6 @@ def get_one_user(current_user, public_id):
     return jsonify({'user': user_data})
 
 
-
 @app.route('/login', methods=['POST'])
 def login():
     auth = request.authorization
@@ -88,15 +93,15 @@ def login():
     if not user:
         return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
     if check_password_hash(user.password, auth.password):
-        token = jwt.encode({'public_id': user.public_id, 'exp':datetime.datetime.utcnow()+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
+        token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow(
+        )+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
         return jsonify({'token': token.decode('UTF-8')})
     return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
 
 
-
 # this part should receive json text, it just a temple now
 @app.route('/search', methods=['GET', 'POST'])
-@token_required
+# @token_required
 def search_for():
     form = SearchForm(request.form)
     print(form.validate_on_submit())
@@ -109,19 +114,17 @@ def search_for():
         guest = form.guest.data
         price_1 = form.price_1.data
         price_2 = form.price_2.data
-        temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
-            'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2
-            }
+        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+                    'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2
+                    }
         # first add a admin manully that control other user
-        new_op = Oprecord(user_id = "current_user.public_id", location=location, area=area,
-        	type_room=type_room, start_date=start_date, end_date=end_date,guest=guest,
-        	price_1=price_1, price_2=price_2)
+        new_op = Oprecord(user_id="current_user.public_id", location=location, area=area,
+                          type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
+                          price_1=price_1, price_2=price_2)
         db.session.add(new_op)
         db.session.commit()
         return jsonify(temp_dic)
     return render_template('search.html', form=form)
-
-
 
 
 @app.route('/stastic', methods=['GET'])
@@ -148,38 +151,39 @@ def stastic(current_user):
     return jsonify({'users': output})
 
 
-@app.route('/search_json', methods=['POST'])
-def search_json():
-    token = request.form.get("token")
-    #check data
-    if not token:
-        return make_response(jsonify({'message': 'Token is missing!'}), 401)
-    try:
-        _data = jwt.decode(token, app.config['SECRET_KEY'])
-        current_user = User.query.filter_by(public_id=_data['public_id']).first()
-    except:
-        return make_response(jsonify({'message': 'Token is invalid'}), 401)
+@api.route('/search_json')
+class SearchResults(Resource):
+    @api.expect(search_model, validate=False)
+    def post(self):
+        data = request.form.get('token')
+        token = data
+        if not token:
+            return make_response(jsonify({'message': 'Token is missing!'}), 401)
+        try:
+            _data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=_data['public_id']).first()
+        except:
+            return make_response(jsonify({'message': 'Token is invalid'}), 401)
 
-    location = request.form.get("location")
-    area = request.form.get("area")
-    type_room = request.form.get("type_room")
-    start_date = request.form.get("start_date")
-    end_date = request.form.get("end_date")
-    guest = request.form.get("guest")
-    price_1 = request.form.get("price_1")
-    price_2 = request.form.get("price_2")
-    _uid = current_user.public_id
-    temp_dic = {'location':location, 'area':area, 'type_room':type_room, 'start_date':start_date,
-    'end_date':end_date, 'guest':guest, 'price_1': price_1, 'price_2': price_2,
-    'user_id': _uid}
+        location = request.form.get('location')
+        area = request.form.get('area')
+        type_room = request.form.get('type_room')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        guest = request.form.get('guest')
+        price_1 = request.form.get('price_1')
+        price_2 = request.form.get('price_2')
+        _uid = current_user.public_id
+        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+                    'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
+                    'user_id': _uid}
 
         # first add a admin manully that control other user
-    new_op = Oprecord(user_id = current_user.public_id, location=location, area=area,
-        type_room=type_room, start_date=start_date, end_date=end_date,guest=guest,
-        price_1=price_1, price_2=price_2)
-    db.session.add(new_op)
-    db.session.commit()
+        new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
+                          type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
+                          price_1=price_1, price_2=price_2)
+        db.session.add(new_op)
+        db.session.commit()
 
-    return jsonify(temp_dic)
-
-
+        return jsonify(temp_dic)

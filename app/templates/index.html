@@ -133,29 +133,281 @@
                     <form class="ui form" id="register-form">
                         <div class="field">
                             <label>Username</label>
-                            <input type="text" name="name" placeholder="Username">
+                            <input type="text" id="uname-register" name="name" placeholder="Username">
                         </div>
                         <div class="field">
                             <label>Password</label>
-                            <input type="password" name="password" placeholder="Password">
+                            <input type="password" id="pass-register" name="password" placeholder="Password">
                         </div>
                         <button class="ui button submit" type="submit">Submit</button>
-                        <div class="ui error message"></div>
+                        <div class="ui red message hidden" id="fail-register">
+                            <div class="header">
+                                Your user registration was unsuccessful.
+                            </div>
+                            <p>Please retry</p>
+                        </div>
+                        <div class="ui green message hidden" id="success-register">
+                            <div class="header">
+                                Your user registration was successful.
+                            </div>
+                            <p>Please log in</p>
+                        </div>
                     </form>
                 </div>
             </div>
 
-            <!-- <div class="ui vertical stripe segment">
-            <div class="ui middle aligned stackable grid container">
-                
+            <div class="ui vertical stripe segment hidden" id="search">
+                <div class="ui text container">
+                    <div class="ui dividing header">
+                        Search for Accomodation
+                    </div>
+                    <form class="ui form" id="search-form" action="{{ url_for('search_for') }}" method="post">
+                        {{ form.csrf_token }}
+                        <div class="field">
+                            <label>Location</label>
+                            <div class="field">
+                                <input type="text" name="location" placeholder="Location">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Area</label>
+                            <div class="field">
+                                <input type="text" name="area" placeholder="Area">
+                            </div>
+                        </div>
+                        <div class="field">
+
+                            <label>Type of Room</label>
+                            <select class="ui dropdown" name="type_room">
+                                <option value="">Select</option>
+                                <option value="1">Private room</option>
+                                <option value="2">Entire home/apt</option>
+                                <option value="3">Shared room</option>
+                            </select>
+                        </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Start</label>
+                                <div class="field">
+                                    <input type="date" name="start_date" placeholder="Area">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>End</label>
+                                <div class="field">
+                                    <input type="date" name="end_date" placeholder="Area">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Guest</label>
+                            <div class="field">
+                                <input type="text" name="guest" placeholder="Number of Guest">
+                            </div>
+                        </div>
+                        <div class="two fields">
+                            <label>Price Range</label>
+                            <div class="field">
+                                <div class="field">
+                                    <input type="text" name="price_1" placeholder="From">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="field">
+                                    <input type="text" name="price_2" placeholder="To">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="ui primary button" type="submit">Submit</button>
+                        <div class="ui error message"></div>
+                    </form>
+                </div>
             </div>
-            </div> -->
         
+            <div class="pusher" id="result">
+                    <div class="ui inverted vertical masthead center aligned segment">
+                
+                        <div class="ui text container">
+                            <h2 class="ui inverted header" id="result-header">
+                            You Searched For
+                            </h2>
+                            <br/>
+<!--                             
+                            <div class="ui three column grid">
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="ui segment">
+                                    <img class="ui wireframe image" src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                        <div class="ui container">
+                            <div class="ui link three cards">
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Matt Giampietro</div>
+                                    <div class="meta">
+                                        <a>Friends</a>
+                                    </div>
+                                    <div class="description">
+                                        Matthew is an interior designer living in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2013
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        75 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Molly</div>
+                                    <div class="meta">
+                                        <span class="date">Coworker</span>
+                                    </div>
+                                    <div class="description">
+                                        Molly is a personal assistant living in Paris.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2011
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        35 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Elyse</div>
+                                    <div class="meta">
+                                        <a>Coworker</a>
+                                    </div>
+                                    <div class="description">
+                                        Elyse is a copywriter working in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2014
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        151 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ui link three cards">
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Matt Giampietro</div>
+                                    <div class="meta">
+                                        <a>Friends</a>
+                                    </div>
+                                    <div class="description">
+                                        Matthew is an interior designer living in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2013
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        75 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Molly</div>
+                                    <div class="meta">
+                                        <span class="date">Coworker</span>
+                                    </div>
+                                    <div class="description">
+                                        Molly is a personal assistant living in Paris.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2011
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        35 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="image">
+                                    <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                                    </div>
+                                    <div class="content">
+                                    <div class="header">Elyse</div>
+                                    <div class="meta">
+                                        <a>Coworker</a>
+                                    </div>
+                                    <div class="description">
+                                        Elyse is a copywriter working in New York.
+                                    </div>
+                                    </div>
+                                    <div class="extra content">
+                                    <span class="right floated">
+                                        Joined in 2014
+                                    </span>
+                                    <span>
+                                        <i class="user icon"></i>
+                                        151 Friends
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             
         </div>
-        
+        <script type="text/javascript">
+            
+        </script>
     </body>
     <style>
+        #result-header {
+            margin-top: 1.5em;
+        }
         .hidden.menu {
             display: none;
             }
@@ -176,6 +428,7 @@
             font-size: 4em;
             font-weight: normal;
             }
+            
             .masthead h2 {
             font-size: 1.7em;
             font-weight: normal;
