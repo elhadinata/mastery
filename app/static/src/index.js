@@ -252,7 +252,7 @@ $(document).ready(() => {
       "price_1": price_1,
       "price_2": price_2
     };
-    json = JSON.stringify(json);
+    
     $.ajax({
       url: '/search_json',
       type: 'POST',
@@ -260,7 +260,6 @@ $(document).ready(() => {
       data: json,
       success: function (data) {
         console.log(data);
-        console.log("YASS");
       },
       error: function (jXHR, textStatus, errorThrown) {
         // console.log(errorThrown);

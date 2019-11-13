@@ -153,6 +153,7 @@ def stastic(current_user):
 
 @api.route('/search_json')
 class SearchResults(Resource):
+    # @token_required
     @api.expect(search_model, validate=False)
     def post(self):
         data = request.form.get('token')
