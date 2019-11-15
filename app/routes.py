@@ -231,7 +231,10 @@ def owner_get(current_user):
 @app.route('/remove_listing/<id>', methods=['POST'])
 @token_required
 def remove_listing(current_user, id):
-    OwnerPost.query.filter_by(user_id=current_user.public_id, id=id).delete()
+    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
+    if len(res.all()) == 0:
+        return "Listing does not exist"
+    res.delete()
     db.session.commit()
     return "Deleted the post with id {}".format(id)
 #put the public_id you want to subscribe
