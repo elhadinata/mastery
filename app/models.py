@@ -72,4 +72,16 @@ class OwnerPost(db.Model):
     Available = db.Column(db.Boolean)
     def __repr__(self):
         return '<Post {}>'.format(self.location)
-    
+    @property
+    def serialize(self):
+        return {
+            'location'  : self.location,
+            'area'      : self.area,
+            'type_room' : self.type_room,
+            'start_date': self.start_date,
+            'end_date'  : self.end_date,
+            'guest'     : self.guest,
+            'price_1'   : self.price_1,
+            'price_2'   : self.price_2,
+            'Available' : self.Available
+        }

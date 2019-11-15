@@ -9,7 +9,7 @@ from functools import wraps
 from app.forms import SearchForm
 from app import search_model, api
 from flask_restplus import Resource
-
+import json
 
 def token_required(f):
     @wraps(f)
@@ -225,10 +225,8 @@ def owner_post(current_user):
 @app.route('/owner_get', methods=['GET'])
 @token_required
 def owner_get(current_user):
-    records = OwnerPost.query.filter_by(user_id=current_user.public_id)
-    
-    #query
-    return jsonify(records.all())
+    records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
+    return jsonify(records=[i.serialize for i in records])
 
 
 
