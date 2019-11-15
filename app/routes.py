@@ -195,7 +195,9 @@ class SearchResults(Resource):
 @app.route('/owner_post', methods=['POST'])
 @token_required
 def owner_post(current_user):
-    #para
+    if current_user.admin == False:
+        return "Must be admin to access this feature"
+
     location = request.form.get('location')
     area = request.form.get('area')
     type_room = request.form.get('type_room')
@@ -225,6 +227,8 @@ def owner_post(current_user):
 @app.route('/owner_get', methods=['GET'])
 @token_required
 def owner_get(current_user):
+    if current_user.admin == False:
+        return "Must be admin to access this feature"
     records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
     return jsonify(records=[i.serialize for i in records])
 
