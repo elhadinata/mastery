@@ -228,8 +228,12 @@ def owner_get(current_user):
     records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
     return jsonify(records=[i.serialize for i in records])
 
-
-
+@app.route('/remove_listing/<id>', methods=['POST'])
+@token_required
+def remove_listing(current_user, id):
+    OwnerPost.query.filter_by(user_id=current_user.public_id, id=id).delete()
+    db.session.commit()
+    return "Deleted the post with id {}".format(id)
 #put the public_id you want to subscribe
 @app.route('/subscribe/<public_id>')
 @token_required
