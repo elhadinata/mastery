@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import User, Oprecord
+from app.models import User, Oprecord, OwnerPost
 from flask import Flask, request, jsonify, make_response, render_template, redirect, url_for
 import uuid
 import jwt
@@ -40,10 +40,13 @@ def index():
 def register():
     if request.method == 'POST':
         data = request.get_json()
+        password = request.form.get("password")
+        name = request.form.get("name")
+        print("HERE")
         print(request.data)
-        hashed_password = generate_password_hash(data['password'], method='sha256')
+        hashed_password = generate_password_hash(password, method='sha256')
         # first add a admin manully that control other user
-        new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=True)
+        new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'message': 'New user created'})
@@ -191,16 +194,41 @@ class SearchResults(Resource):
 
 @app.route('/owner_post', methods=['POST'])
 @token_required
-def owner_post():
+def owner_post(current_user):
     #para
-    pass
+    location = request.form.get('location')
+    area = request.form.get('area')
+    type_room = request.form.get('type_room')
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+    guest = request.form.get('guest')
+    price_1 = request.form.get('price_1')
+    price_2 = request.form.get('price_2')
+    if(request.form.get('Available')=='True'):
+        available=True
+    else:
+        available=False
+    _uid = current_user.public_id
+    temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+                'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
+                'user_id': _uid}
 
+    # first add a admin manully that control other user
+    new_op = OwnerPost(user_id=current_user.public_id, location=location, area=area,
+                        type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
+                        price_1=price_1, price_2=price_2, Available=available)
+    db.session.add(new_op)
+    db.session.commit()
+
+    return jsonify(new_op.__repr__())
 
 @app.route('/owner_get', methods=['GET'])
 @token_required
-def owner_get():
+def owner_get(current_user):
+    records = OwnerPost.query.filter_by(user_id=current_user.public_id)
+    
     #query
-    pass
+    return jsonify(records.all())
 
 
 
@@ -219,7 +247,7 @@ def subscribe(current_user, public_id):
 
 
 #put the public_id you want to unsubscribe
-@app.route('/unsubscribe/public_id')
+@app.route('/unsubscribe/<public_id>')
 @token_required
 def unsubscribe(current_user, public_id):
     user = User.query.filter_by(public_id=public_id).first()
