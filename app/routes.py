@@ -43,7 +43,7 @@ def register():
         print(request.data)
         hashed_password = generate_password_hash(data['password'], method='sha256')
         # first add a admin manully that control other user
-        new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+        new_user = User(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
         return jsonify({'message': 'New user created'})
@@ -188,3 +188,47 @@ class SearchResults(Resource):
         db.session.commit()
 
         return jsonify(temp_dic)
+
+@app.route('/owner_post', methods=['POST'])
+@token_required
+def owner_post():
+    #para
+    pass
+
+
+@app.route('/owner_get', methods=['GET'])
+@token_required
+def owner_get():
+    #query
+    pass
+
+
+
+#put the public_id you want to subscribe
+@app.route('/subscribe/<public_id>')
+@token_required
+def subscribe(current_user, public_id):
+    user = User.query.filter_by(public_id=public_id).first()
+    if user is None:
+        return "user not exist"
+    if user == current_user:
+        return "wait, are you subscribe yourself?"
+    current_user.follow(user)
+    db.session.commit()
+    return "success!"
+
+
+#put the public_id you want to unsubscribe
+@app.route('/unsubscribe/public_id')
+@token_required
+def unsubscribe(current_user, public_id):
+    user = User.query.filter_by(public_id=public_id).first()
+    if user is None:
+        return "user not exist"
+    if user == current_user:
+        return "wait, are you unsubscribe yourself?"
+    current_user.unfollow(user)
+    db.session.commit()
+    return "unscribe success"
+
+
