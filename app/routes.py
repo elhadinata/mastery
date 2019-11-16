@@ -228,7 +228,7 @@ def owner_get(current_user):
     records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
     return jsonify(records=[i.serialize for i in records])
 
-@app.route('/remove_listing/<id>', methods=['POST'])
+@app.route('/owner_remove/<id>', methods=['POST'])
 @token_required
 def remove_listing(current_user, id):
     res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
@@ -237,6 +237,37 @@ def remove_listing(current_user, id):
     res.delete()
     db.session.commit()
     return "Deleted the post with id {}".format(id)
+
+@app.route('/owner_edit/<id>', methods=['PUT'])
+@token_required
+def edit_listing(current_user, id):
+    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
+    if len(res.all()) == 0:
+        return "Listing does not exist"
+    res = res.first()
+    location = request.form.get('location')
+    area = request.form.get('area')
+    type_room = request.form.get('type_room')
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+    guest = request.form.get('guest')
+    price_1 = request.form.get('price_1')
+    price_2 = request.form.get('price_2')
+    available = request.form.get('Available')
+
+    res.location = location
+    res.area = area
+    res.type_room = type_room
+    res.start_date = start_date
+    res.end_date = end_date
+    res.guest = guest
+    res.price_1 = price_1
+    res.price_2 = price_2
+    res.available = available
+    
+    db.session.commit()
+    return "Edited the post with id {}".format(id)
+
 #put the public_id you want to subscribe
 @app.route('/subscribe/<public_id>')
 @token_required
