@@ -10,6 +10,14 @@ from app.forms import SearchForm
 from app import search_model, api
 from flask_restplus import Resource
 import json
+import paypalrestsdk
+
+
+paypalrestsdk.configure({
+  "mode": "sandbox", # sandbox or live
+  "client_id": "AS9hENrxNu3ih4aoEKWdVcgSM3VWsKn7wPFE01C5C6fOneALiB6PmASnNpGPzwDOm9WTll6h_9gk3mla",
+  "client_secret": "EJfjLG8mh3pi9AKaN97Sr7ackqvk6cUhD7zTAcy2d1IqPG_jPSP46hdbFviXzto_SWxksROVwajlIhS2" })
+
 
 def token_required(f):
     @wraps(f)
@@ -294,5 +302,54 @@ def unsubscribe(current_user, public_id):
     current_user.unfollow(user)
     db.session.commit()
     return "unscribe success"
+
+
+@app.route('/makepay')
+def makepay():
+    return render_template('makepay.html')
+
+
+@app.route('/payment', methods=['POST'])
+def payment():
+    payment = paypalrestsdk.Payment({
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"},
+        "redirect_urls": {
+            "return_url": "http://localhost:5000/makepay/success",
+            "cancel_url": "http://localhost:5000/"},
+        "transactions": [{
+            "item_list": {
+                "items": [{
+                    "name": "testitem",
+                    "sku": "12345",
+                    "price": "20.00",   #change the value at here
+                    "currency": "USD",
+                    "quantity": 1}]},
+            "amount": {
+                "total": "20.00",       #change total also here
+                "currency": "USD"},
+            "description": "This is the payment transaction description."}]})
+
+    if payment.create():
+        print('Payment success!')
+    else:
+        print(payment.error)
+
+    return jsonify({'paymentID' : payment.id})
+
+@app.route('/execute', methods=['POST'])
+def execute():
+    success = False
+
+    payment = paypalrestsdk.Payment.find(request.form['paymentID'])
+
+    if payment.execute({'payer_id' : request.form['payerID']}):
+        print('Execute success!')
+        success = True
+    else:
+        print(payment.error)
+    return jsonify({'success' : success})
+
 
 
