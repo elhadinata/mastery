@@ -39,11 +39,14 @@ def index():
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
-        data = request.get_json()
-        password = request.form.get("password")
-        name = request.form.get("name")
-        print("HERE")
-        print(request.data)
+        # data = request.get_json()
+        password = request.form.get('name')
+        name = request.form.get('password')
+        # print(str(name)+' '+str(password))
+        # print("HERE")
+        # print(data["name"])
+        # print(data["password"])
+        # print(request.data)
         hashed_password = generate_password_hash(password, method='sha256')
         # first add a admin manully that control other user
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
