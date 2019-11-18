@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import User, Oprecord, OwnerPost
+from app.models import User, Oprecord, OwnerPost, Booking
 from flask import Flask, request, jsonify, make_response, render_template, redirect, url_for
 import uuid
 import jwt
@@ -364,12 +364,13 @@ def user_booking(current_user):
     if request.method == 'GET':
         booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
         return jsonify(booking=[i.serialize for i in booking])
+        # return "HERE"
     else:
         owner_id = request.form.get('owner_id')
         listing_id = request.form.get('listing_id')
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
-        booking = Booking(owner_id=owner_id, listing_id=listing_id, start_date=start_date, end_date=end_date)
+        booking = Booking(owner_id=owner_id,listing_id=listing_id, renter_id=current_user.public_id ,start_date=start_date, end_date=end_date)
         db.session.add(booking)
         db.session.commit()
         return "Booking created"
