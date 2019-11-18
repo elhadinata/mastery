@@ -355,4 +355,32 @@ def execute():
     return jsonify({'success' : success})
 
 
+# For customer to see all their bookings and make new bookings
 
+
+@app.route('/book', methods=['GET', 'POST'])
+@token_required
+def user_booking(current_user):
+    if request.method == 'GET':
+        booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
+        return jsonify(booking=[i.serialize for i in booking])
+    else:
+        owner_id = request.form.get('owner_id')
+        listing_id = request.form.get('listing_id')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        booking = Booking(owner_id=owner_id, listing_id=listing_id, start_date=start_date, end_date=end_date)
+        db.session.add(booking)
+        db.session.commit()
+        return "Booking created"
+# @app.route('/book', methods=['POST'])
+# @token_required
+# def post(self, current_user):
+#     owner_id = request.form.get('owner_id')
+#     listing_id = request.form.get('listing_id')
+#     start_date = request.form.get('start_date')
+#     end_date = request.form.get('end_date')
+#     booking = Booking(owner_id=owner_id, listing_id=listing_id, start_date=start_date, end_date=end_date)
+#     db.session.add(booking)
+#     db.session.commit()
+#     return "Booking created"

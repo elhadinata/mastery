@@ -1,9 +1,6 @@
 from app import app, db
 from datetime import datetime
 
-
-
-
 followers = db.Table(
     'followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.public_id')),
@@ -16,6 +13,7 @@ class User(db.Model):
     name = db.Column(db.String(50))
     password = db.Column(db.String(80))
     posts = db.relationship('OwnerPost', backref='author', lazy='dynamic')
+    books = db.relationship('Booking')
     admin = db.Column(db.Boolean)
     followed = db.relationship('User', secondary=followers,
         primaryjoin=(followers.c.follower_id == public_id),
@@ -59,6 +57,7 @@ class Oprecord(db.Model):
 
 class OwnerPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    booking = db.relationship('Booking')
     user_id = db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
     location = db.Column(db.String(50))
     area = db.Column(db.String(50))
@@ -89,9 +88,15 @@ class OwnerPost(db.Model):
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
-    listing_id =  db.Column(db.String(50),db.ForeignKey('OwnerPost.id'), index=True)    
-    renter_id =  db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
+    listing_id =  db.Column(db.String(50),db.ForeignKey('owner_post.id'))    
+    renter_id =  db.Column(db.String(50),db.ForeignKey('user.public_id'))
     start_date = db.Column(db.String(50))
     end_date = db.Column(db.String(50))
-    guest = db.Column(db.String(50))
-    price = db.Column(db.String(50))
+    @property
+    def serialize(self):
+        return {
+            'owner_id'  : self.owner_id,
+            'listing_id': self.listing_id,
+            'start_date': self.start_date,
+            'end_date'  : self.end_date
+        }
