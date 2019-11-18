@@ -85,3 +85,13 @@ class OwnerPost(db.Model):
             'price_2'   : self.price_2,
             'Available' : self.Available
         }
+
+class Booking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
+    listing_id =  db.Column(db.String(50),db.ForeignKey('OwnerPost.id'), index=True)    
+    renter_id =  db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
+    start_date = db.Column(db.String(50))
+    end_date = db.Column(db.String(50))
+    guest = db.Column(db.String(50))
+    price = db.Column(db.String(50))
