@@ -12,6 +12,7 @@ flask-sqlalchemy = "*"
 flask-restplus = "*"
 pyjwt = "*"
 paypalrestsdk = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.7"
