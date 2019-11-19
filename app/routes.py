@@ -12,7 +12,7 @@ from flask_restplus import Resource
 import json
 import paypalrestsdk
 import pandas as pd
-from app import df_mi, df_st, df_po
+import time
 
 
 paypalrestsdk.configure({
@@ -109,13 +109,7 @@ def register():
         # data = request.get_json()
         password = request.form.get('name')
         name = request.form.get('password')
-        # print(str(name)+' '+str(password))
-        # print("HERE")
-        # print(data["name"])
-        # print(data["password"])
-        # print(request.data)
         hashed_password = generate_password_hash(password, method='sha256')
-        # first add a admin manully that control other user
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
@@ -189,18 +183,73 @@ def search_for():
         temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2
                     }
-        
+
+        if start_date == "":
+            start_date = "1970-01-01"
+        if end_date == "":
+            end_date = "2021-01-01"
+
+        time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+
+        # TODO check constraint
+        time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
 
 
-        
+        during_time = int((time_e - time_s) / 86400)
+        if price_1 == "":
+            price_1 = 0
+        if price_2 == "":
+            price_2 = 9999999
+
+
+
+        qq = Df.query.filter(Df.neighbourhood_group.ilike("%" + location + "%"),
+                    Df.neighbourhood.ilike("%" + area + "%"),
+                    Df.room_type.ilike("%" + type_room + "%"),
+                    (Df.minimum_nights <= int(during_time)),
+                    (Df.price >= int(price_1)),
+                    (Df.price <= int(price_2))
+                        ).all()
+        #print(during_time)
+        final_res = []
+
+        for dd in qq:
+            his_rec = {}
+
+            his_rec['id'] = dd.id
+            his_rec['name'] = dd.name
+            his_rec['host_id'] = dd.host_id
+            his_rec['host_name'] = dd.host_name
+            his_rec['neighbourhood_group'] = dd.neighbourhood_group
+            his_rec['neighbourhood'] = dd.neighbourhood
+            his_rec['latitude'] = dd.latitude
+            his_rec['longitude'] = dd.longitude
+            his_rec['room_type'] = dd.room_type
+            his_rec['price'] = dd.price
+            his_rec['minimum_nights'] = dd.minimum_nights
+            his_rec['number_of_reviews'] = dd.number_of_reviews
+            his_rec['last_review'] = dd.last_review
+            his_rec['reviews_per_month'] = dd.reviews_per_month
+            his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
+            his_rec['availability_365'] = dd.availability_365
+            final_res.append(his_rec)
+
         # first add a admin manully that control other user
         new_op = Oprecord(user_id="current_user.public_id", location=location, area=area,
                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
                           price_1=price_1, price_2=price_2)
         db.session.add(new_op)
         db.session.commit()
-        return jsonify(temp_dic)
+        # return jsonify(final_res)
+        return render_template('search_res.html', res= final_res)
     return render_template('search.html', form=form)
+
+@app.route('/want/<int:id>')
+def user_want(id):
+    print(id)
+    return "yes"
+
+
 
 
 @app.route('/stastic', methods=['GET'])

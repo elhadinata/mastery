@@ -5,7 +5,7 @@ from wtforms.validators import ValidationError, DataRequired
 class SearchForm(FlaskForm):
 	location = StringField('Location',validators=[DataRequired()])
 	area = StringField('Area',validators=[DataRequired()])
-	type_room = SelectField('Type of room', choices=[('1', 'Private room'), ('2', 'Entire home/apt'), ('3', 'Shared room')])
+	type_room = SelectField('Type of room', choices=[('Private room', 'Private room'), ('Entire home/apt', 'Entire home/apt'), ( 'Shared room', 'Shared room')])
 	start_date = StringField('Start date')
 	end_date = StringField('End date')
 	guest = StringField('Number of guests')
