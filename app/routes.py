@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import User, Oprecord, OwnerPost
+from app.models import User, Oprecord, OwnerPost, Michelin,Station,Df
 from flask import Flask, request, jsonify, make_response, render_template, redirect, url_for
 import uuid
 import jwt
@@ -11,6 +11,8 @@ from app import search_model, api
 from flask_restplus import Resource
 import json
 import paypalrestsdk
+import pandas as pd
+from app import df_mi, df_st, df_po
 
 
 paypalrestsdk.configure({
@@ -18,6 +20,63 @@ paypalrestsdk.configure({
   "client_id": "AS9hENrxNu3ih4aoEKWdVcgSM3VWsKn7wPFE01C5C6fOneALiB6PmASnNpGPzwDOm9WTll6h_9gk3mla",
   "client_secret": "EJfjLG8mh3pi9AKaN97Sr7ackqvk6cUhD7zTAcy2d1IqPG_jPSP46hdbFviXzto_SWxksROVwajlIhS2" })
 
+
+
+def get_data_cluster():
+    mmm = Michelin.query.all()
+    sss = Station.query.all()
+    ddd = Df.query.all()
+    mi_res = []
+    for mm in mmm:
+        mi_rec = {}
+        mi_rec['name'] = mm.name
+        mi_rec['year'] = mm.year
+        mi_rec['latitude'] = mm.latitude
+        mi_rec['longitude'] = mm.longitude
+        mi_rec['city'] = mm.city
+        mi_rec['cuisine'] = mm.cuisine
+        mi_rec['price'] = mm.price
+        mi_rec['url'] = mm.url
+        mi_rec['star'] = mm.star
+        mi_res.append(mi_rec)
+    df_mi = pd.DataFrame(mi_res)
+
+    sta_bus = []
+    for ss in sss:
+        sta_rec = {}
+        sta_rec['station_name'] = ss.station_name
+        sta_rec['_type'] = ss._type
+        sta_rec['latitude'] = ss.latitude
+        sta_rec['longitude'] = ss.longitude
+        sta_bus.append(sta_rec)
+
+    df_st = pd.DataFrame(sta_bus)
+
+
+    his_post = []
+    for dd in ddd:
+        his_rec = {}
+        his_rec['name'] = dd.name
+        his_rec['host_id'] = dd.host_id
+        his_rec['host_name'] = dd.host_name
+        his_rec['neighbourhood_group'] = dd.neighbourhood_group
+        his_rec['neighbourhood'] = dd.neighbourhood
+        his_rec['latitude'] = dd.latitude
+        his_rec['longitude'] = dd.longitude
+        his_rec['room_type'] = dd.room_type
+        his_rec['price'] = dd.price
+        his_rec['minimum_nights'] = dd.minimum_nights
+        his_rec['number_of_reviews'] = dd.number_of_reviews
+        his_rec['last_review'] = dd.last_review
+        his_rec['reviews_per_month'] = dd.reviews_per_month
+        his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
+        his_rec['availability_365'] = dd.availability_365
+        his_post.append(his_rec)
+    df_po = pd.DataFrame(his_post)
+    return df_mi, df_st, df_po
+
+
+mi_pandas, st_pandas, post_pandas = get_data_cluster()
 
 def token_required(f):
     @wraps(f)
@@ -118,7 +177,6 @@ def login():
 # @token_required
 def search_for():
     form = SearchForm(request.form)
-    print(form.validate_on_submit())
     if form.validate_on_submit():
         location = form.location.data
         area = form.area.data
@@ -131,6 +189,10 @@ def search_for():
         temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2
                     }
+        
+
+
+        
         # first add a admin manully that control other user
         new_op = Oprecord(user_id="current_user.public_id", location=location, area=area,
                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
