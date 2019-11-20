@@ -2,7 +2,7 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import  Api, fields
-
+import pandas as pd
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,3 +26,6 @@ search_model = api.model('airbnb search', {
 
 
 from app import routes, models
+
+
+

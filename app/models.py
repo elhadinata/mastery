@@ -85,6 +85,7 @@ class OwnerPost(db.Model):
             'Available' : self.Available
         }
 
+
 class Booking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.String(50), db.ForeignKey('user.public_id'))
@@ -103,3 +104,61 @@ class Booking(db.Model):
             'start_date': self.start_date,
             'end_date'  : self.end_date
         }
+
+class Df(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    host_id = db.Column(db.String(50))
+    host_name = db.Column(db.String(50))
+    neighbourhood_group = db.Column(db.String(50))
+    neighbourhood = db.Column(db.String(50))
+    latitude = db.Column(db.String(50))
+    longitude = db.Column(db.String(50))
+    room_type = db.Column(db.String(50))
+    price = db.Column(db.Integer)
+    minimum_nights = db.Column(db.Integer)
+    number_of_reviews = db.Column(db.String(50))
+    last_review = db.Column(db.String(50))
+    reviews_per_month = db.Column(db.String(50))
+    calculated_host_listings_count = db.Column(db.String(50))
+    availability_365 = db.Column(db.String(50))
+    @property
+    def serialize(self):
+        return {
+            'id'  : self.id,
+            'name': self.name,
+            'host_id': self.host_id,
+            'host_name': self.host_name,
+            'neighbourhood_group'  : self.neighbourhood_group,
+            'neighbourhood' : self.neighbourhood,
+            'latitude' : self.latitude,
+            'longitude' : self.longitude,
+            'room_type' : self.room_type,
+            'price' : self.price,
+            'minimum_nights' : self.minimum_nights,
+            'last_review' : self.last_review,
+            'reviews_per_month' : self.reviews_per_month,
+            'calculated_host_listings_count' : self.calculated_host_listings_count,
+            'availability_365' : self.availability_365,
+        }
+
+class Station(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    station_name = db.Column(db.String(50))
+    _type = db.Column(db.String(50))
+    latitude = db.Column(db.String(50))
+    longitude = db.Column(db.String(50))
+
+
+
+class Michelin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    year = db.Column(db.String(50))
+    latitude = db.Column(db.String(50))
+    longitude = db.Column(db.String(50))
+    city = db.Column(db.String(50))
+    cuisine = db.Column(db.String(50))
+    price = db.Column(db.String(50))
+    url = db.Column(db.String(50))
+    star = db.Column(db.String(50))
