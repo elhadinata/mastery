@@ -368,9 +368,18 @@ def user_booking(current_user):
     else:
         owner_id = request.form.get('owner_id')
         listing_id = request.form.get('listing_id')
+        owner_post = OwnerPost.query.filter_by(id=listing_id, user_id=owner_id)
+        
+        if len(owner_post.all()) == 0:
+            return "404, Cant find accomodation"
+        
+        owner_post[0].Available = 0
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
         booking = Booking(owner_id=owner_id,listing_id=listing_id, renter_id=current_user.public_id ,start_date=start_date, end_date=end_date)
+        
+        owner_post = OwnerPost.query.filter_by(id=listing_id).first()
+        
         db.session.add(booking)
         db.session.commit()
         return "Booking created"
