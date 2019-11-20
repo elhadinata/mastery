@@ -13,7 +13,7 @@ import json
 import paypalrestsdk
 import pandas as pd
 import time
-
+from ml import *
 
 paypalrestsdk.configure({
   "mode": "sandbox", # sandbox or live
@@ -77,6 +77,9 @@ def get_data_cluster():
 
 
 mi_pandas, st_pandas, post_pandas = get_data_cluster()
+
+
+
 
 def token_required(f):
     @wraps(f)
@@ -247,6 +250,23 @@ def search_for():
 @app.route('/want/<int:id>')
 def user_want(id):
     print(id)
+    ml_model = ML_model()
+    ml_model.prep_price_preds(post_pandas)
+    row = ml_model.data.loc[id]
+    rt = ml_model.rt_dict[row["room_type"]]
+    ml_model.prep_knn_preds(rt)
+    
+    
+    latitude = row['latitude']
+    longitude = row['longitude']
+    room_type = row['room_type']
+    price = row['price']
+    minumum_nights = row['minimum_nights']
+    
+    
+    result  = ml_model.knn_prediction(latitude,longitude,room_type,price,minimum_nights)
+    
+    print(result.to_string())
     return "yes"
 
 
