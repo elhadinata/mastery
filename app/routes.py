@@ -356,8 +356,6 @@ def execute():
 
 
 # For customer to see all their bookings and make new bookings
-
-
 @app.route('/book', methods=['GET', 'POST'])
 @token_required
 def user_booking(current_user):
@@ -374,6 +372,18 @@ def user_booking(current_user):
         db.session.add(booking)
         db.session.commit()
         return "Booking created"
+
+
+# For owners to see all their renters
+@app.route('/bookings', methods=['GET'])
+@token_required
+def owner_bookings(current_user):
+    owner_id = request.form.get('owner_id')
+    booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
+    if not booking:
+        return "No bookings"
+    return jsonify(booking=[i.serialize for i in booking])
+
 # @app.route('/book', methods=['POST'])
 # @token_required
 # def post(self, current_user):
