@@ -96,11 +96,6 @@ def token_required(f):
     return decorated
 
 
-@app.route('/index', methods=['GET'])
-def index():
-    form = SearchForm(request.form)
-    return render_template('index.html', form=form)
-
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -242,13 +237,6 @@ def login():
 #         # return jsonify(final_res)
 #         return render_template('search_res.html', res= final_res)
 #     return render_template('search.html', form=form)
-
-@app.route('/want/<int:id>')
-def user_want(id):
-    print(id)
-    return "yes"
-
-
 
 
 @app.route('/stastic', methods=['GET'])
