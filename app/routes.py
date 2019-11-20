@@ -251,23 +251,58 @@ def search_for():
 def user_want(id):
     print(id)
     ml_model = ML_model()
+    #print(ml_model)
     ml_model.prep_price_preds(post_pandas)
-    row = ml_model.data.loc[id]
-    rt = ml_model.rt_dict[row["room_type"]]
+    row = ml_model.data.loc[id-1]
+    print(row["room_type"])
+    rt = row["room_type"]
     ml_model.prep_knn_preds(rt)
-    
+    ml_model.build_knn_model()
     
     latitude = row['latitude']
     longitude = row['longitude']
     room_type = row['room_type']
     price = row['price']
-    minumum_nights = row['minimum_nights']
+    minimum_nights = row['minimum_nights']
     
     
     result  = ml_model.knn_prediction(latitude,longitude,room_type,price,minimum_nights)
     
-    print(result.to_string())
-    return "yes"
+    room_detail = []
+    output = []
+    count = 0
+    for ind in result:
+        
+     
+        row = post_pandas.loc[ind]
+        ele_data = {}
+        ele_data['id'] = str(ind+1)
+        ele_data['name'] = str(row['name'])
+        ele_data['host_id'] = str(row['host_id'])
+        ele_data['host_name'] = str(row['host_name'])
+        ele_data['neighbourhood_group'] = str(row['neighbourhood_group'])
+        ele_data['neighbourhood'] = str(row['neighbourhood'])
+        ele_data['latitude'] = str(row['latitude'])
+        ele_data['longitude'] = str(row['longitude'])
+        ele_data['room_type'] = str(row['room_type'])
+        ele_data['price'] = str(row['price'])
+        ele_data['minimum_nights'] = str(row['minimum_nights'])
+        ele_data['number_of_reviews'] = str(row['number_of_reviews'])
+        ele_data['last_review'] = str(row['last_review'])
+        ele_data['reviews_per_month'] = str(row['reviews_per_month'])
+        ele_data['calculated_host_listings_count'] = str(row['calculated_host_listings_count'])
+        ele_data['availability_365'] = str(row['availability_365'])
+        if count == 0:
+            room_detail.append(ele_data)
+            count += 1
+        else:
+            output.append(ele_data)
+    return jsonify({'single_detail':room_detail,'recommendation': output})
+
+
+
+    #print(result.to_string())
+    #return "yes"
 
 
 

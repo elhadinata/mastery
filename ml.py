@@ -80,7 +80,7 @@ class ML_model:
         self.data =  df
     
     
-        for index, row in ml_model.data.iterrows(): 
+        for index, row in self.data.iterrows(): 
             if row['neighbourhood_group'] not in self.geo_dict:
                 self.geo_dict[row['neighbourhood_group']]={}
             if row['neighbourhood'] not in self.geo_dict[row['neighbourhood_group']]:
@@ -88,7 +88,7 @@ class ML_model:
 
         for key in self.geo_dict.keys():
 
-            t_df = ml_model.data[ml_model.data['neighbourhood_group'] == key]
+            t_df = self.data[self.data['neighbourhood_group'] == key]
             for neigh in self.geo_dict[key].keys():
 
                 df = t_df[t_df['neighbourhood'] == neigh]
@@ -99,7 +99,7 @@ class ML_model:
     
     def prep_knn_preds(self,input_rt):
         
-        k_df = ml_model.data[["latitude","longitude","room_type","price","minimum_nights"]].copy()
+        k_df = self.data[["latitude","longitude","room_type","price","minimum_nights"]].copy()
         rt =k_df['room_type'] ==input_rt
         
         self.knn_df = k_df[rt].copy()
@@ -158,20 +158,21 @@ class ML_model:
     def knn_prediction(self, latitude = 1.33235, longitude = 103.78521, room_type = 0,   price = 81, minumum_nights = 90):
     
         query = [[latitude*1000, longitude*1000,room_type, price, minumum_nights]]
-        preds = self.knn_model.kneighbors(query, 5, return_distance=False)
+        preds = self.knn_model.kneighbors(query, 6, return_distance=False)
         
-        result = pd.DataFrame({})
+        #result = pd.DataFrame({})
+        result = []
         # for each query
         for item in preds:
             #for each result
-            for ele in item[1:]:
+            for ele in item:
                 
                 ind = self.knn_df[self.knn_df['new_id']==ele].index[0]
-        
+                result.append(ind)
                 #train_df.loc[2264]
-                row = self.data.loc[ind].copy()
-                result = result.append(row,ignore_index = False)
-                print(row.to_string)
+                #row = self.data.loc[ind].copy()
+                #result = result.append(row,ignore_index = False)
+                #print(row.to_string)
         return result
         
     def price_prediction(self, df,queries=[]):
