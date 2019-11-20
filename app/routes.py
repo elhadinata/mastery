@@ -380,7 +380,7 @@ def user_booking(current_user):
 def owner_bookings(current_user):
     owner_id = request.form.get('owner_id')
     booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
-    if not booking:
+    if len(booking) == 0:
         return "No bookings"
     return jsonify(booking=[i.serialize for i in booking])
 
