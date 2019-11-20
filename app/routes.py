@@ -14,6 +14,12 @@ import paypalrestsdk
 import pandas as pd
 import time
 from ml import *
+from flask_restplus import Resource, Api, abort
+from flask_restplus import fields
+from flask_restplus import inputs
+from flask_restplus import reqparse
+
+
 
 paypalrestsdk.configure({
   "mode": "sandbox", # sandbox or live
@@ -105,6 +111,29 @@ def index():
     form = SearchForm(request.form)
     return render_template('index.html', form=form)
 
+register_model = api.model('register', {
+    'username': fields.String,
+    'password': fields.String
+})
+@api.route('/register_test')
+class Register_test(Resource):
+    @api.response(200, 'Successful')
+    @api.doc(description="user register")
+    @api.expect(register_model, validate=True)
+    def post(self):
+        data = request.get_json()
+        password = data['password']
+        name = data['username']
+        user = User.query.filter_by(name = name).first()
+        if user:
+            return make_response('Repeat Username!', 401, {'Username': 'username conflict!"'})
+        hashed_password = generate_password_hash(password, method='sha256')
+        new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'New user created'})
+
+
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -152,6 +181,43 @@ def get_one_user(current_user, public_id):
     user_data['password'] = user.password
     user_data['admin'] = user.admin
     return jsonify({'user': user_data})
+
+
+
+###############################################
+# swagger login test
+###############################################
+credential_model = api.model('credential', {
+    'username': fields.String,
+    'password': fields.String
+})
+
+credential_parser = reqparse.RequestParser()
+credential_parser.add_argument('username', type=str)
+credential_parser.add_argument('password', type=str)
+
+# sig_lg
+@api.route('/login_swagger')
+class Login_test(Resource):
+    @api.response(200, 'Successful')
+    @api.doc(description="Generates a authentication token")
+    @api.expect(credential_parser, validate=True)
+    def post(self):
+        args = credential_parser.parse_args()
+        username = args.get('username')
+        password = args.get('password')
+        if not username or not password:
+            return make_response('Empty fields - Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+        user = User.query.filter_by(name=username).first()
+        if not user:
+            return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+        if check_password_hash(password, password):
+            token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow(
+            )+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
+            return jsonify({'token': token.decode('UTF-8')})
+        return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+
+
 
 
 @app.route('/login', methods=['POST'])
