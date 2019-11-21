@@ -1,4 +1,5 @@
 from app import app, db
+from app.models import User, Oprecord, OwnerPost, Booking
 from app.models import User, Oprecord, OwnerPost, Michelin,Station,Df
 from flask import Flask, request, jsonify, make_response, render_template, redirect, url_for
 import uuid
@@ -18,71 +19,68 @@ from flask_restplus import Resource, Api, abort
 from flask_restplus import fields
 from flask_restplus import inputs
 from flask_restplus import reqparse
-
-
+from sqlalchemy import or_, and_
 
 paypalrestsdk.configure({
   "mode": "sandbox", # sandbox or live
   "client_id": "AS9hENrxNu3ih4aoEKWdVcgSM3VWsKn7wPFE01C5C6fOneALiB6PmASnNpGPzwDOm9WTll6h_9gk3mla",
   "client_secret": "EJfjLG8mh3pi9AKaN97Sr7ackqvk6cUhD7zTAcy2d1IqPG_jPSP46hdbFviXzto_SWxksROVwajlIhS2" })
 
+# def get_data_cluster():
+#     mmm = Michelin.query.all()
+#     sss = Station.query.all()
+#     ddd = Df.query.all()
+#     mi_res = []
+#     for mm in mmm:
+#         mi_rec = {}
+#         mi_rec['name'] = mm.name
+#         mi_rec['year'] = mm.year
+#         mi_rec['latitude'] = mm.latitude
+#         mi_rec['longitude'] = mm.longitude
+#         mi_rec['city'] = mm.city
+#         mi_rec['cuisine'] = mm.cuisine
+#         mi_rec['price'] = mm.price
+#         mi_rec['url'] = mm.url
+#         mi_rec['star'] = mm.star
+#         mi_res.append(mi_rec)
+#     df_mi = pd.DataFrame(mi_res)
+
+#     sta_bus = []
+#     for ss in sss:
+#         sta_rec = {}
+#         sta_rec['station_name'] = ss.station_name
+#         sta_rec['_type'] = ss._type
+#         sta_rec['latitude'] = ss.latitude
+#         sta_rec['longitude'] = ss.longitude
+#         sta_bus.append(sta_rec)
+
+#     df_st = pd.DataFrame(sta_bus)
 
 
-def get_data_cluster():
-    mmm = Michelin.query.all()
-    sss = Station.query.all()
-    ddd = Df.query.all()
-    mi_res = []
-    for mm in mmm:
-        mi_rec = {}
-        mi_rec['name'] = mm.name
-        mi_rec['year'] = mm.year
-        mi_rec['latitude'] = mm.latitude
-        mi_rec['longitude'] = mm.longitude
-        mi_rec['city'] = mm.city
-        mi_rec['cuisine'] = mm.cuisine
-        mi_rec['price'] = mm.price
-        mi_rec['url'] = mm.url
-        mi_rec['star'] = mm.star
-        mi_res.append(mi_rec)
-    df_mi = pd.DataFrame(mi_res)
-
-    sta_bus = []
-    for ss in sss:
-        sta_rec = {}
-        sta_rec['station_name'] = ss.station_name
-        sta_rec['_type'] = ss._type
-        sta_rec['latitude'] = ss.latitude
-        sta_rec['longitude'] = ss.longitude
-        sta_bus.append(sta_rec)
-
-    df_st = pd.DataFrame(sta_bus)
+#     his_post = []
+#     for dd in ddd:
+#         his_rec = {}
+#         his_rec['name'] = dd.name
+#         his_rec['host_id'] = dd.host_id
+#         his_rec['host_name'] = dd.host_name
+#         his_rec['neighbourhood_group'] = dd.neighbourhood_group
+#         his_rec['neighbourhood'] = dd.neighbourhood
+#         his_rec['latitude'] = dd.latitude
+#         his_rec['longitude'] = dd.longitude
+#         his_rec['room_type'] = dd.room_type
+#         his_rec['price'] = dd.price
+#         his_rec['minimum_nights'] = dd.minimum_nights
+#         his_rec['number_of_reviews'] = dd.number_of_reviews
+#         his_rec['last_review'] = dd.last_review
+#         his_rec['reviews_per_month'] = dd.reviews_per_month
+#         his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
+#         his_rec['availability_365'] = dd.availability_365
+#         his_post.append(his_rec)
+#     df_po = pd.DataFrame(his_post)
+#     return df_mi, df_st, df_po
 
 
-    his_post = []
-    for dd in ddd:
-        his_rec = {}
-        his_rec['name'] = dd.name
-        his_rec['host_id'] = dd.host_id
-        his_rec['host_name'] = dd.host_name
-        his_rec['neighbourhood_group'] = dd.neighbourhood_group
-        his_rec['neighbourhood'] = dd.neighbourhood
-        his_rec['latitude'] = dd.latitude
-        his_rec['longitude'] = dd.longitude
-        his_rec['room_type'] = dd.room_type
-        his_rec['price'] = dd.price
-        his_rec['minimum_nights'] = dd.minimum_nights
-        his_rec['number_of_reviews'] = dd.number_of_reviews
-        his_rec['last_review'] = dd.last_review
-        his_rec['reviews_per_month'] = dd.reviews_per_month
-        his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
-        his_rec['availability_365'] = dd.availability_365
-        his_post.append(his_rec)
-    df_po = pd.DataFrame(his_post)
-    return df_mi, df_st, df_po
-
-
-mi_pandas, st_pandas, post_pandas = get_data_cluster()
+# mi_pandas, st_pandas, post_pandas = get_data_cluster()
 
 
 
@@ -106,10 +104,6 @@ def token_required(f):
     return decorated
 
 
-# @app.route('/index', methods=['GET'])
-# def index():
-#     form = SearchForm(request.form)
-#     return render_template('index.html', form=form)
 
 register_model = api.model('register', {
     'username': fields.String,
@@ -128,13 +122,7 @@ class UserRegister(Resource):
         user = User.query.filter_by(name = name).first()
         if user:
             return make_response('Repeat Username!', 401, {'Username': 'username conflict!"'})
-        hashed_password = generate_password_hash(password, method='sha256')
-        new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({'message': 'New user created'})
-
-
+        return jsonify({ "message": "User registered" })
 #make_response('message', 401, {'Username': 'Token is missing!'})
 
 @api.route('/userlist')
@@ -471,90 +459,188 @@ class SearchStastic(Resource):
 ###########
 # here is Jansen's route need to change to pure json
 
+owner_model = api.model('accomodation', {
+    'name': fields.String,
+    # 'host_id': fields.String,
+    # 'host_name': fields.String,
+    'neighbourhood_group': fields.String,
+    'neighbourhood': fields.String,
+    'latitude': fields.String,
+    'longitude': fields.String,
+    'room_type': fields.String,
+    'price': fields.String,
+    'minimum_nights': fields.String,
+    'number_of_reviews': fields.String,
+    'last_review': fields.String,
+    'reviews_per_month': fields.String,
+    'calculated_host_listings_count': fields.String,
+    'availability_365': fields.String,
+})
 
-# @app.route('/owner_post', methods=['POST'])
-# @token_required
-# def owner_post(current_user):
-#     #para
-#     location = request.form.get('location')
-#     area = request.form.get('area')
-#     type_room = request.form.get('type_room')
-#     start_date = request.form.get('start_date')
-#     end_date = request.form.get('end_date')
-#     guest = request.form.get('guest')
-#     price_1 = request.form.get('price_1')
-#     price_2 = request.form.get('price_2')
-#     if(request.form.get('Available')=='True'):
-#         available=True
-#     else:
-#         available=False
-#     _uid = current_user.public_id
-#     temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-#                 'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-#                 'user_id': _uid}
+owner_parser = reqparse.RequestParser()
+owner_parser.add_argument('name', type=str)
+owner_parser.add_argument('host_id', type=str)
+owner_parser.add_argument('host_name', type=str)
+owner_parser.add_argument('neighbourhood_group', type=str)
+owner_parser.add_argument('neighbourhood', type=str)
 
-#     # first add a admin manully that control other user
-#     new_op = OwnerPost(user_id=current_user.public_id, location=location, area=area,
-#                         type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-#                         price_1=price_1, price_2=price_2, Available=available)
-#     db.session.add(new_op)
-#     db.session.commit()
+owner_parser.add_argument('latitude', type=str)
+owner_parser.add_argument('longitude', type=str)
+owner_parser.add_argument('room_type', type=str)
+owner_parser.add_argument('price', type=str)
+owner_parser.add_argument('minimum_nights', type=str)
 
-#     return jsonify(new_op.__repr__())
+owner_parser.add_argument('number_of_reviews', type=str)
+owner_parser.add_argument('last_review', type=str)
+owner_parser.add_argument('reviews_per_month', type=str)
+owner_parser.add_argument('calculated_host_listings_count', type=str)
+owner_parser.add_argument('availability_365', type=str)
 
-# @app.route('/owner_get', methods=['GET'])
-# @token_required
-# def owner_get(current_user):
-#     records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
-#     return jsonify(records=[i.serialize for i in records])
+# TODO
+@app.route('/owner')
+class Owner(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Post a new accomodation")
+    @api.expect(owner_parser, validate=True)
+    def post(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-# @app.route('/owner_remove/<id>', methods=['POST'])
-# @token_required
-# def remove_listing(current_user, id):
-#     res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-#     if len(res.all()) == 0:
-#         return "Listing does not exist"
-#     res.delete()
-#     db.session.commit()
-#     return "Deleted the post with id {}".format(id)
+        data = request.get_json()
+        name = data['name']
+        host_id = current_user.public_id
+        host_name = current_user.name
+        neighbourhood_group =data['location'] # REQ
+        neighbourhood = data['area'] # REQ
+        latitude = data['latitude']
+        longitude = data['longitude']
+        room_type = data['room_type'] # REQ
+        price = data['price']
+        minimum_nights = data['minimum_nights'] # REQ
+        number_of_reviews = data['number_of_reviews']
+        last_review = data['last_review']
+        reviews_per_month = data['reviews_per_month']
+        calculated_host_listings_count = data['calculated_host_listings_count']
+        availability_365 = data['availability_365'] # REQ
+        
+        
+        temp_dic = {'name': name, 'host_id': host_id
+                    , 'neighbourhood_group': neighbourhood_group
+                    , 'neighbourhood': neighbourhood
+                    , 'latitude': latitude
+                    , 'longitude': longitude
+                    , 'room_type': room_type
+                    , 'price': price
+                    , 'minimum_nights': minimum_nights
+                    , 'number_of_reviews': number_of_reviews
+                    , 'last_review': last_review
+                    , 'reviews_per_month': reviews_per_month
+                    , 'calculated_host_listings_count': calculated_host_listings_count
+                    , 'availability_365': availability_365}
 
-# @app.route('/owner_edit/<id>', methods=['PUT'])
-# @token_required
-# def edit_listing(current_user, id):
-#     res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-#     if len(res.all()) == 0:
-#         return "Listing does not exist"
-#     res = res.first()
-#     location = request.form.get('location')
-#     area = request.form.get('area')
-#     type_room = request.form.get('type_room')
-#     start_date = request.form.get('start_date')
-#     end_date = request.form.get('end_date')
-#     guest = request.form.get('guest')
-#     price_1 = request.form.get('price_1')
-#     price_2 = request.form.get('price_2')
-#     available = request.form.get('Available')
+        # first add a admin manully that control other user
+        new_op = Df(name=name
+        , host_id=host_id, host_name=host_name
+        , neighbourhood_group=neighbourhood_group
+        , neighbourhood=neighbourhood
+        , latitude=latitude
+        , longitude=longitude
+        , room_type=room_type
+        , price=price
+        , minimum_nights=minimum_nights
+        , number_of_reviews=number_of_reviews
+        , last_review=last_review
+        , reviews_per_month=reviews_per_month
+        , calculated_host_listings_count=calculated_host_listings_count
+        , availability_365=availability_365)
+        db.session.add(new_op)
+        db.session.commit()
 
-#     res.location = location
-#     res.area = area
-#     res.type_room = type_room
-#     res.start_date = start_date
-#     res.end_date = end_date
-#     res.guest = guest
-#     res.price_1 = price_1
-#     res.price_2 = price_2
-#     res.available = available
+        return jsonify({ "message": "Successful" })
 
-#     db.session.commit()
-#     return "Edited the post with id {}".format(id)
-###########
-###########
-###########
-###########
-###########
-###########
+@app.route('/owner_get', methods=['GET'])
+@token_required
+def owner_get(current_user):
+    print(current_user.public_id)
+    records = Df.query.filter_by(host_id=current_user.public_id).all()
+    return jsonify(records=[i.serialize for i in records])
+
+@app.route('/owner_remove/<id>', methods=['DELETE'])
+@token_required
+def remove_listing(current_user, id):
+    res = Df.query.filter_by(id=id, host_id=current_user.public_id)
+    if len(res.all()) == 0:
+        return "Listing does not exist"
+    res.delete()
+    db.session.commit()
+    return "Deleted the post with id {}".format(id)
 
 
+# TODO
+@app.route('/owner_edit/<id>', methods=['PUT'])
+@token_required
+def edit_listing(current_user, id):
+    res = Df.query.filter_by(host_id=current_user.public_id, id=id)
+    if len(res.all()) == 0:
+        return "Listing does not exist"
+    res = res.first()
+
+    name = request.form.get('name')
+    host_id = current_user.public_id
+    host_name = current_user.name
+    neighbourhood_group = request.form.get('location') # REQ
+    neighbourhood = request.form.get('area') # REQ
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+    room_type = request.form.get('room_type') # REQ
+    price = request.form.get('price')
+    minimum_nights = request.form.get('minimum_nights') # REQ
+    number_of_reviews = request.form.get('number_of_reviews')
+    last_review = request.form.get('last_review')
+    reviews_per_month = request.form.get('reviews_per_month')
+    calculated_host_listings_count = request.form.get('calculated_host_listings_count')
+    availability_365 = request.form.get('availability_365') # REQ
+
+    res.name = name
+    res.neighbourhood_group = neighbourhood_group
+    res.neighbourhood = neighbourhood
+    res.latitude = latitude
+    res.longitude = longitude
+    res.room_type = room_type
+    res.price = price
+    res.minimum_nights = minimum_nights
+    res.number_of_reviews = number_of_reviews
+    res.last_review = last_review
+    res.reviews_per_month = reviews_per_month
+    res.calculated_host_listings_count = calculated_host_listings_count
+    res.availability_365 = availability_365
+
+    temp_dic = {'name': name, 'host_id': host_id
+        , 'neighbourhood_group': neighbourhood_group
+        , 'neighbourhood': neighbourhood
+        , 'latitude': latitude
+        , 'longitude': longitude
+        , 'room_type': room_type
+        , 'price': price
+        , 'minimum_nights': minimum_nights
+        , 'number_of_reviews': number_of_reviews
+        , 'last_review': last_review
+        , 'reviews_per_month': reviews_per_month
+        , 'calculated_host_listings_count': calculated_host_listings_count
+        , 'availability_365': availability_365}
+
+    db.session.commit()
+    return jsonify(temp_dic)
 
 #put the public_id you want to subscribe
 
@@ -662,5 +748,96 @@ def execute():
         print(payment.error)
     return jsonify({'success' : success})
 
+# ===================== CUSTOMER ============================== #
+# For customer to see all their bookings and make new bookings
+@app.route('/book', methods=['GET'])
+@token_required
+def get_list_booking(current_user):
+    booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
+    return jsonify(booking=[i.serialize for i in booking])
+
+# For customer to post a booking
+@app.route('/book/<id>', methods=['POST'])
+@token_required
+def make_booking(current_user, id):
+    owner_post = Df.query.filter_by(id=id)
+    
+    if len(owner_post.all()) == 0:
+        return "404, Cant find accomodation"
+    
+    start_date = request.form.get('start_date')
+    end_date = request.form.get('end_date')
+    if start_date == "":
+        start_date = "1970-01-01"
+    if end_date == "":
+        end_date = "2021-01-01"
+
+    time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+    time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
+    duration = int((time_e - time_s) / 86400)
+
+    if duration < int(owner_post.first().minimum_nights):
+        return "403, Duration below requirement"
+
+    df_data = owner_post.first()
+    df_data.availability_365 = str(int(df_data.availability_365)-duration)
+
+    booking = Booking(owner_id=owner_post.first().host_id, listing_id=id, renter_id=current_user.public_id, start_date=start_date, end_date=end_date)
+    host_id = owner_post.first().host_id
+    
+    db.session.add(booking)
+    db.session.commit()
+    return "Booking created"
+
+# for customer to cancel their booking
+@app.route('/book/<id>', methods=['DELETE'])
+@token_required
+def del_booking(current_user, id):
+    booking = Booking.query.filter_by(listing_id=id, renter_id=current_user.public_id)
+    if len(booking.all()) == 0:
+        return "404, Cant find accomodation"
+    
+    booking.delete()
+    db.session.commit()
+    return "Post with id {} is removed".format(id)
 
 
+# ===================== OWNER ============================== #
+# For owners to see all their renters
+@app.route('/owner/bookings', methods=['GET'])
+@token_required
+def owner_bookings(current_user):
+    owner_id = request.form.get('owner_id')
+    booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
+    if len(booking) == 0:
+        return "No bookings"
+    return jsonify(booking=[i.serialize for i in booking])
+
+# Delete bookings based on the listing id
+@app.route('/owner/bookings/<int:id>', methods=['DELETE'])
+@token_required
+def del_owner_bookings(current_user, id):
+    booking = Booking.query.filter_by(owner_id=current_user.public_id, listing_id=id).all()
+    if len(booking) == 0:
+        return "Not found"
+    
+    booking.sort(key=lambda x:x.id, reverse=True)
+    booking_id = booking[0].id
+    print(booking_id)
+    tmp = Booking.query.filter_by(id=booking_id)
+    tmp.delete()
+    db.session.commit()
+    return "Deleted booking of accomodation with listing_id of {}".format(id)
+
+
+# @app.route('/book', methods=['POST'])
+# @token_required
+# def post(self, current_user):
+#     owner_id = request.form.get('owner_id')
+#     listing_id = request.form.get('listing_id')
+#     start_date = request.form.get('start_date')
+#     end_date = request.form.get('end_date')
+#     booking = Booking(owner_id=owner_id, listing_id=listing_id, start_date=start_date, end_date=end_date)
+#     db.session.add(booking)
+#     db.session.commit()
+#     return "Booking created"
