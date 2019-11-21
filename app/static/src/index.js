@@ -260,6 +260,12 @@ $(document).ready(() => {
       data: json,
       success: function (data) {
         console.log(data);
+        console.log(data[0]["name"]);
+        for (let i = 0; i < data.length; i++) {
+          let element = data[i];
+          let doc = $('result');
+          doc
+        }
       },
       error: function (jXHR, textStatus, errorThrown) {
         // console.log(errorThrown);
