@@ -178,7 +178,7 @@ class GetOneUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="Get single user from the public_ud, this function need admin user")
+    @api.doc(description="Get single user from the public_id, this function need admin user")
     def get(self,public_id):
         token = None
         if 'api-token' in request.headers:
