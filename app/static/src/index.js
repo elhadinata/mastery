@@ -284,12 +284,75 @@ $(document).ready(() => {
           let item = data[i];
           r.children.item(0).children.item(1).children.item(0).children.item(i).children.item(1).children.item(0).innerText = item['name'];
 
+
+
+          let a = document.createElement("div")
+          a.className = "card"
+          let b = document.createElement("div")
+          b.className = "content"
+          let c = document.createElement("div")
+          c.className = "header"
+          c.innerText = item['name']
+          let d = document.createElement("div")
+          d.className = "description"
+          d.innerText = item['price']
+          let e = document.createElement("br")
+
+          d.appendChild(e)
+          c.appendChild(d)
+          b.appendChild(c)
+          a.appendChild(b)
+          r.children.item(0).children.item(1).appendChild(a)
+
         }
-        let x = document.createElement("button")
-        x.innerText = "Hello There"
-        r.children.item(0).children.item(1).appendChild(x)
+        // let x = document.createElement("button")
+        // x.innerText = "Hello There"
+        // r.children.item(0).children.item(1).appendChild(x)
         // r.className = "pusher"
         // r.id = "result"
+
+
+
+
+                // <div class="card">
+                //     <div class="image">
+                //         <img src="{{ url_for('static', filename='assets/img/image.png') }}">
+                //     </div>
+                //     <div class="content">
+                //         <div class="header">Matt Giampietro</div>
+                //         <div class="meta">
+                //             <a>Friends</a>
+                //         </div>
+                //         <div class="description">
+                //             Matthew is an interior designer living in New York.
+                //         </div>
+                //     </div>
+                //     <div class="extra content">
+                //         <span class="right floated">
+                //             Joined in 2013
+                //         </span>
+                //         <span>
+                //             <i class="user icon"></i>
+                //             75 Friends
+                //         </span>
+                //     </div>
+                // </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       },
       error: function (jXHR, textStatus, errorThrown) {
         // console.log(errorThrown);
