@@ -175,9 +175,26 @@ class SearchResults(Resource):
         price_1 = request.form.get('price_1')
         price_2 = request.form.get('price_2')
         _uid = current_user.public_id
-        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-                    'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-                    'user_id': _uid}
+   #     temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+                    # 'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
+                    # 'user_id': _uid}
+
+        his_dic = {}
+        his_dic['name'] = "John"
+        his_dic['price'] = 100
+
+        a = {
+            'name': "Pepe",
+            'price': 400
+        }
+        b = {
+            'name': "Test",
+            'price': 300
+        }
+        array = []
+        array.append(his_dic)
+        array.append(a)
+        array.append(b)
 
         # first add a admin manully that control other user
         new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
@@ -186,4 +203,4 @@ class SearchResults(Resource):
         db.session.add(new_op)
         db.session.commit()
 
-        return jsonify(temp_dic)
+        return jsonify(array)

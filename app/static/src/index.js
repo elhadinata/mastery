@@ -279,6 +279,17 @@ $(document).ready(() => {
       success: function (data) {
         console.log(data);
         console.log("YASS");
+        let r = document.getElementById("result");
+        for(i=0; i<data.length; i++){
+          let item = data[i];
+          r.children.item(0).children.item(1).children.item(0).children.item(i).children.item(1).children.item(0).innerText = item['name'];
+
+        }
+        let x = document.createElement("button")
+        x.innerText = "Hello There"
+        r.children.item(0).children.item(1).appendChild(x)
+        // r.className = "pusher"
+        // r.id = "result"
       },
       error: function (jXHR, textStatus, errorThrown) {
         // console.log(errorThrown);
