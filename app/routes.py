@@ -346,8 +346,23 @@ class SearchRoom(Resource):
 
 
 
+owner_model = api.model('accomodation', {
+    'name': fields.String,
+    'neighbourhood_group': fields.String,
+    'neighbourhood': fields.String,
+    'latitude': fields.String,
+    'longitude': fields.String,
+    'room_type': fields.String,
+    'price': fields.String,
+    'minimum_nights': fields.String,
+    'number_of_reviews': fields.String,
+    'last_review': fields.String,
+    'reviews_per_month': fields.String,
+    'calculated_host_listings_count': fields.String,
+    'availability_365': fields.String,
+})
 #token required
-@api.route('/want/<int:id>')
+@api.route('/owner/<int:id>')
 class UserWant(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
@@ -409,7 +424,172 @@ class UserWant(Resource):
             else:
                 output.append(ele_data)
         return jsonify({'single_detail':room_detail,'recommendation': output})
+    
+    @api.response(200, 'Successful')
+    @api.response(400, 'Failed')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Post a new accomodation in")
+    @api.expect(owner_model)
+    def post(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
+
+        data = request.get_json()
+        name = data['name']
+        host_id = current_user.public_id
+        host_name = current_user.name
+        neighbourhood_group =data['location']
+        neighbourhood = data['area']
+        latitude = data['latitude']
+        longitude = data['longitude']
+        room_type = data['room_type']
+        price = data['price']
+        minimum_nights = data['minimum_nights']
+        number_of_reviews = data['number_of_reviews']
+        last_review = data['last_review']
+        reviews_per_month = data['reviews_per_month']
+        calculated_host_listings_count = data['calculated_host_listings_count']
+        availability_365 = data['availability_365']
+        
+        
+        temp_dic = {'name': name, 'host_id': host_id
+                    , 'neighbourhood_group': neighbourhood_group
+                    , 'neighbourhood': neighbourhood
+                    , 'latitude': latitude
+                    , 'longitude': longitude
+                    , 'room_type': room_type
+                    , 'price': price
+                    , 'minimum_nights': minimum_nights
+                    , 'number_of_reviews': number_of_reviews
+                    , 'last_review': last_review
+                    , 'reviews_per_month': reviews_per_month
+                    , 'calculated_host_listings_count': calculated_host_listings_count
+                    , 'availability_365': availability_365}
+
+        new_op = Df(name=name
+        , host_id=host_id, host_name=host_name
+        , neighbourhood_group=neighbourhood_group
+        , neighbourhood=neighbourhood
+        , latitude=latitude
+        , longitude=longitude
+        , room_type=room_type
+        , price=price
+        , minimum_nights=minimum_nights
+        , number_of_reviews=number_of_reviews
+        , last_review=last_review
+        , reviews_per_month=reviews_per_month
+        , calculated_host_listings_count=calculated_host_listings_count
+        , availability_365=availability_365)
+        db.session.add(new_op)
+        db.session.commit()
+
+        return jsonify({ "message": "Successful" })
+    @api.response(200, 'Successful')
+    @api.response(400, 'Failed')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Post a new accomodation in")
+    @api.expect(owner_model)
+    def put(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+
+        data = request.get_json()
+        name = data['name']
+        host_id = current_user.public_id
+        host_name = current_user.name
+        neighbourhood_group =data['location']
+        neighbourhood = data['area']
+        latitude = data['latitude']
+        longitude = data['longitude']
+        room_type = data['room_type']
+        price = data['price']
+        minimum_nights = data['minimum_nights']
+        number_of_reviews = data['number_of_reviews']
+        last_review = data['last_review']
+        reviews_per_month = data['reviews_per_month']
+        calculated_host_listings_count = data['calculated_host_listings_count']
+        availability_365 = data['availability_365']
+        
+        res = Df.query.filter_by(host_id=current_user.public_id, id=id)
+        if len(res.all()) == 0:
+            return make_response('message', 404, {'Accomodation': 'Not found!'})
+        res = res.first()
+
+        
+        temp_dic = {'name': name, 'host_id': host_id
+                    , 'neighbourhood_group': neighbourhood_group
+                    , 'neighbourhood': neighbourhood
+                    , 'latitude': latitude
+                    , 'longitude': longitude
+                    , 'room_type': room_type
+                    , 'price': price
+                    , 'minimum_nights': minimum_nights
+                    , 'number_of_reviews': number_of_reviews
+                    , 'last_review': last_review
+                    , 'reviews_per_month': reviews_per_month
+                    , 'calculated_host_listings_count': calculated_host_listings_count
+                    , 'availability_365': availability_365}
+
+        res.name = name
+        res.neighbourhood_group = neighbourhood_group
+        res.neighbourhood = neighbourhood
+        res.latitude = latitude
+        res.longitude = longitude
+        res.room_type = room_type
+        res.price = price
+        res.minimum_nights = minimum_nights
+        res.number_of_reviews = number_of_reviews
+        res.last_review = last_review
+        res.reviews_per_month = reviews_per_month
+        res.calculated_host_listings_count = calculated_host_listings_count
+        res.availability_365 = availability_365
+
+        db.session.commit()
+
+        return jsonify({ "message": "Successful" })
+    @api.response(200, 'Successful')
+    @api.response(400, 'Failed')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Post a new accomodation in")
+    def delete(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        res = Df.query.filter_by(id=id, host_id=current_user.public_id)
+        if len(res.all()) == 0:
+            return "Listing does not exist"
+        res.delete()
+        db.session.commit()
+        return "Deleted the post with id {}".format(id)
 
 @api.route('/stastic')
 class SearchStastic(Resource):
@@ -451,87 +631,33 @@ class SearchStastic(Resource):
         return jsonify({'users': output})
 
 
-###########
-###########
-###########
-###########
-###########
-###########
 # here is Jansen's route need to change to pure json
 
-owner_model = api.model('accomodation', {
-    'name': fields.String,
-    # 'host_id': fields.String,
-    # 'host_name': fields.String,
-    'neighbourhood_group': fields.String,
-    'neighbourhood': fields.String,
-    'latitude': fields.String,
-    'longitude': fields.String,
-    'room_type': fields.String,
-    'price': fields.String,
-    'minimum_nights': fields.String,
-    'number_of_reviews': fields.String,
-    'last_review': fields.String,
-    'reviews_per_month': fields.String,
-    'calculated_host_listings_count': fields.String,
-    'availability_365': fields.String,
-})
 
-owner_parser = reqparse.RequestParser()
-owner_parser.add_argument('name', type=str)
-owner_parser.add_argument('host_id', type=str)
-owner_parser.add_argument('host_name', type=str)
-owner_parser.add_argument('neighbourhood_group', type=str)
-owner_parser.add_argument('neighbourhood', type=str)
-
-owner_parser.add_argument('latitude', type=str)
-owner_parser.add_argument('longitude', type=str)
-owner_parser.add_argument('room_type', type=str)
-owner_parser.add_argument('price', type=str)
-owner_parser.add_argument('minimum_nights', type=str)
-
-owner_parser.add_argument('number_of_reviews', type=str)
-owner_parser.add_argument('last_review', type=str)
-owner_parser.add_argument('reviews_per_month', type=str)
-owner_parser.add_argument('calculated_host_listings_count', type=str)
-owner_parser.add_argument('availability_365', type=str)
-
-# TODO
-@app.route('/owner')
+@app.route('/ownerrr')
 class Owner(Resource):
     @api.response(200, 'Successful')
+    @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accomodation")
-    @api.expect(owner_parser, validate=True)
+    @api.doc(description="Post a new accomodation in")
+    @api.expect(owner_model)
     def post(self):
-        token = None
-        if 'api-token' in request.headers:
-            token = request.headers['api-token']
-        if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(
-                public_id=data['public_id']).first()
-        except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
-
         data = request.get_json()
         name = data['name']
-        host_id = current_user.public_id
-        host_name = current_user.name
-        neighbourhood_group =data['location'] # REQ
-        neighbourhood = data['area'] # REQ
+        host_id = data['host_id']
+        host_name = data['host_name']
+        neighbourhood_group =data['location']
+        neighbourhood = data['area']
         latitude = data['latitude']
         longitude = data['longitude']
-        room_type = data['room_type'] # REQ
+        room_type = data['room_type']
         price = data['price']
-        minimum_nights = data['minimum_nights'] # REQ
+        minimum_nights = data['minimum_nights']
         number_of_reviews = data['number_of_reviews']
         last_review = data['last_review']
         reviews_per_month = data['reviews_per_month']
         calculated_host_listings_count = data['calculated_host_listings_count']
-        availability_365 = data['availability_365'] # REQ
+        availability_365 = data['availability_365']
         
         
         temp_dic = {'name': name, 'host_id': host_id
@@ -548,7 +674,6 @@ class Owner(Resource):
                     , 'calculated_host_listings_count': calculated_host_listings_count
                     , 'availability_365': availability_365}
 
-        # first add a admin manully that control other user
         new_op = Df(name=name
         , host_id=host_id, host_name=host_name
         , neighbourhood_group=neighbourhood_group

@@ -1,9 +1,8 @@
 import pandas as pd
-<<<<<<< HEAD
 airbnb_file="data/singapore-airbnb/listings.csv"
 o_df = pd.read_csv(airbnb_file)
 o_df = o_df.fillna(0)
-=======
+
 
 # Get the address of the datasets
 airbnb_file="data/singapore-airbnb/listings.csv"
@@ -45,5 +44,5 @@ m_df_sing = m1_df_sing.append(m2_df_sing, ignore_index = True)
 # For the train stations, we rename the columns for a better match.
 columns = ["station_name", "type", "latitude", "longitude"]
 train_stat_df.columns = columns
-train_stat_df
->>>>>>> jc-ml
+# train_stat_df
+# >>>>>>> jc-ml

@@ -15,8 +15,8 @@ api = Api(app, authorizations={
     }
 },
     security='API-KEY',
-	default="airbnb",
-	title="airbnb dataset",
+	default="Airbnb",
+	title="Airbnb dataset",
 	description="Login to get token, then search.")
 
 search_model = api.model('airbnb search', {
