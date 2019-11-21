@@ -263,6 +263,7 @@ class SearchRoom(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
+    @api.response(406, 'Input format error')
     @api.doc(description="Search the room you want, leave the empty string that you don't want to put")
     @api.expect(search_model)
     def post(self):
@@ -296,29 +297,34 @@ class SearchRoom(Resource):
             start_date = "1970-01-01"
         if end_date == "":
             end_date = "2021-01-01"
+        try:
 
-        time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+            time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
 
-        # TODO check constraint
-        time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
-
-
-        during_time = int((time_e - time_s) / 86400)
-        if price_1 == "":
-            price_1 = 0
-        if price_2 == "":
-            price_2 = 9999999
+            # TODO check constraint
+            time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
 
 
+            during_time = int((time_e - time_s) / 86400)
+            if price_1 == "":
+                price_1 = 0
+            if price_2 == "":
+                price_2 = 9999999
 
-        qq = Df.query.filter(Df.neighbourhood_group.ilike("%" + location + "%"),
-                    Df.neighbourhood.ilike("%" + area + "%"),
-                    Df.room_type.ilike("%" + type_room + "%"),
-                    (Df.minimum_nights <= int(during_time)),
-                    (Df.price >= int(price_1)),
-                    (Df.price <= int(price_2))
-                        ).all()
+
+
+
+            qq = Df.query.filter(Df.neighbourhood_group.ilike("%" + location + "%"),
+                        Df.neighbourhood.ilike("%" + area + "%"),
+                        Df.room_type.ilike("%" + type_room + "%"),
+                        (Df.minimum_nights <= int(during_time)),
+                        (Df.price >= int(price_1)),
+                        (Df.price <= int(price_2))
+                            ).all()
         #print(during_time)
+        except:
+            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer'})
+
         final_res = []
 
         for dd in qq:
