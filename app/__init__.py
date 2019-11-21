@@ -7,7 +7,14 @@ import pandas as pd
 app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
-api = Api(app, 
+api = Api(app, authorizations={
+    'API-KEY': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'api-token'
+    }
+},
+    security='API-KEY',
 	default="airbnb",
 	title="airbnb dataset",
 	description="Login to get token, then search.")

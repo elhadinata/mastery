@@ -95,29 +95,30 @@ def token_required(f):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+            return make_response('message', 401, {'Username': 'Token is missing!'}), 401
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return jsonify({'message': 'Token is invalid'}), 401
+            return make_response('message', 401, {'Username': 'Token is Invalid!'}), 401
         return f(current_user, *args, **kwargs)
     return decorated
 
 
-@app.route('/index', methods=['GET'])
-def index():
-    form = SearchForm(request.form)
-    return render_template('index.html', form=form)
+# @app.route('/index', methods=['GET'])
+# def index():
+#     form = SearchForm(request.form)
+#     return render_template('index.html', form=form)
 
 register_model = api.model('register', {
     'username': fields.String,
     'password': fields.String
 })
-@api.route('/register_test')
-class Register_test(Resource):
+@api.route('/user_register')
+class UserRegister(Resource):
     @api.response(200, 'Successful')
+    @api.response(401, 'Repeat Username!')
     @api.doc(description="user register")
     @api.expect(register_model, validate=True)
     def post(self):
@@ -134,59 +135,79 @@ class Register_test(Resource):
         return jsonify({'message': 'New user created'})
 
 
+#make_response('message', 401, {'Username': 'Token is missing!'})
 
-@app.route('/register', methods=['GET','POST'])
-def register():
-    if request.method == 'POST':
-        # data = request.get_json()
-        password = request.form.get('name')
-        name = request.form.get('password')
-        hashed_password = generate_password_hash(password, method='sha256')
-        new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({'message': 'New user created'})
-    return render_template('register.html')
+@api.route('/userlist')
+class GetUserList(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Forbidden : Need ADMIN')
+    @api.doc(description="get all the user list, this function need admin user")
+    def get(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})
+            #return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+            #return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        if not current_user.admin:
+            make_response('message', 403, {'Username': 'need admin user'})
+            #return make_response('message', 403, {'Username': 'need admin user to perform function'})
+        users = User.query.all()
+        output = []
+        for user in users:
+            user_data = {}
+            user_data['public_id'] = user.public_id
+            user_data['name'] = user.name
+            user_data['password'] = user.password
+            user_data['admin'] = user.admin
+            output.append(user_data)
+        return jsonify({'users': output})
 
 
+#input public userid
+@api.route('/user/<public_id>')
+class GetOneUser(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Forbidden : Need ADMIN')
+    @api.doc(description="Get single user from the public_ud, this function need admin user")
+    def get(self,public_id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+           
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        if not current_user.admin:
+            return make_response('message', 403, {'Username': 'need admin user to perform function'})
 
-@app.route('/user', methods=['GET'])
-@token_required
-def get_all_users(current_user):
-    if not current_user.admin:
-        return jsonify({'message': 'Non-ADMIN user cannot performe that function'})
-    users = User.query.all()
-    output = []
-    for user in users:
+        user = User.query.filter_by(public_id=public_id).first()
+        if not user:
+            return make_response('message', 403, {'Username': 'need admin user to perform function'})
         user_data = {}
         user_data['public_id'] = user.public_id
         user_data['name'] = user.name
         user_data['password'] = user.password
         user_data['admin'] = user.admin
-        output.append(user_data)
-    return jsonify({'users': output})
-
-
-@app.route('/user/<public_id>', methods=['GET'])
-@token_required
-def get_one_user(current_user, public_id):
-    if not current_user.admin:
-        return jsonify({'message': 'Non-ADMIN user cannot performe that function'})
-    user = User.query.filter_by(public_id=public_id).first()
-    if not user:
-        return jsonify({'message': 'No user found!'})
-    user_data = {}
-    user_data['public_id'] = user.public_id
-    user_data['name'] = user.name
-    user_data['password'] = user.password
-    user_data['admin'] = user.admin
-    return jsonify({'user': user_data})
+        return jsonify({'user': user_data})
 
 
 
-###############################################
-# swagger login test
-###############################################
+
 credential_model = api.model('credential', {
     'username': fields.String,
     'password': fields.String
@@ -197,62 +218,80 @@ credential_parser.add_argument('username', type=str)
 credential_parser.add_argument('password', type=str)
 
 # sig_lg
-@api.route('/login_swagger')
-class Login_test(Resource):
+@api.route('/token')
+class TokenGeneration(Resource):
     @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Generates a authentication token")
     @api.expect(credential_parser, validate=True)
-    def post(self):
+    def get(self):
         args = credential_parser.parse_args()
         username = args.get('username')
         password = args.get('password')
         if not username or not password:
-            return make_response('Empty fields - Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+            return make_response('Empty fields - Could not verify', 401, {'www-auth': 'basic realm="authentication required!"'})
         user = User.query.filter_by(name=username).first()
         if not user:
-            return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
-        if check_password_hash(password, password):
+            return make_response('Could not verify', 401, {'www-auth': 'basic realm="authentication required!"'})
+        if check_password_hash(user.password, password):
             token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow(
             )+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
             return jsonify({'token': token.decode('UTF-8')})
-        return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
+        return make_response('Could not verify', 401, {'www-auth': 'basic realm="authentication required!"'})
+
+search_model = api.model('search', {
+    'location': fields.String,
+    'area': fields.String,
+    'type_room':fields.String,
+    'start_date': fields.String,
+    'end_date' : fields.String,
+    'guest': fields.String,
+    'price_1': fields.String,
+    'price_2': fields.String
+})
+
+'''
+return make_response('message', 401, {'Username': 'Token is missing!'})
+return make_response('message', 401, {'Username': 'Token is Invalid!'})
+return make_response('message', 403, {'Username': 'need admin user to perform function'})
+'''
 
 
+##token required
+@api.route('/search')
+class SearchRoom(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Forbidden : Need ADMIN')
+    @api.doc(description="Search the room you want, leave the empty string that you don't want to put")
+    @api.expect(search_model)
+    def post(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        if not current_user.admin:
+            return make_response('message', 403, {'Username': 'need admin user to perform function'})
 
-
-@app.route('/login', methods=['POST'])
-def login():
-    auth = request.authorization
-    if not auth or not auth.username or not auth.password:
-        return make_response('Empty fields - Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
-    user = User.query.filter_by(name=auth.username).first()
-    if not user:
-        return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
-    if check_password_hash(user.password, auth.password):
-        token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow(
-        )+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
-        return jsonify({'token': token.decode('UTF-8')})
-    return make_response('Could not verify', 401, {'www-auth': 'basic realm="Login required!"'})
-
-
-# this part should receive json text, it just a temple now
-@app.route('/search', methods=['GET', 'POST'])
-# @token_required
-def search_for():
-    form = SearchForm(request.form)
-    if form.validate_on_submit():
-        location = form.location.data
-        area = form.area.data
-        type_room = form.type_room.data
-        start_date = form.start_date.data
-        end_date = form.end_date.data
-        guest = form.guest.data
-        price_1 = form.price_1.data
-        price_2 = form.price_2.data
+        data = request.get_json()
+        location = data['location']
+        area = data['area']
+        type_room = data['type_room']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        guest = data['guest']
+        price_1 = data['price_1']
+        price_2 = data['price_2']
         temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2
                     }
-
         if start_date == "":
             start_date = "1970-01-01"
         if end_date == "":
@@ -304,241 +343,272 @@ def search_for():
             final_res.append(his_rec)
 
         # first add a admin manully that control other user
-        new_op = Oprecord(user_id="current_user.public_id", location=location, area=area,
-                          type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-                          price_1=price_1, price_2=price_2)
-        db.session.add(new_op)
-        db.session.commit()
-        # return jsonify(final_res)
-        return render_template('search_res.html', res= final_res)
-    return render_template('search.html', form=form)
-
-@app.route('/want/<int:id>')
-def user_want(id):
-    print(id)
-    ml_model = ML_model()
-    #print(ml_model)
-    ml_model.prep_price_preds(post_pandas)
-    row = ml_model.data.loc[id-1]
-    print(row["room_type"])
-    rt = row["room_type"]
-    ml_model.prep_knn_preds(rt)
-    ml_model.build_knn_model()
-    
-    latitude = row['latitude']
-    longitude = row['longitude']
-    room_type = row['room_type']
-    price = row['price']
-    minimum_nights = row['minimum_nights']
-    
-    
-    result  = ml_model.knn_prediction(latitude,longitude,room_type,price,minimum_nights)
-    
-    room_detail = []
-    output = []
-    count = 0
-    for ind in result:
-        
-     
-        row = post_pandas.loc[ind]
-        ele_data = {}
-        ele_data['id'] = str(ind+1)
-        ele_data['name'] = str(row['name'])
-        ele_data['host_id'] = str(row['host_id'])
-        ele_data['host_name'] = str(row['host_name'])
-        ele_data['neighbourhood_group'] = str(row['neighbourhood_group'])
-        ele_data['neighbourhood'] = str(row['neighbourhood'])
-        ele_data['latitude'] = str(row['latitude'])
-        ele_data['longitude'] = str(row['longitude'])
-        ele_data['room_type'] = str(row['room_type'])
-        ele_data['price'] = str(row['price'])
-        ele_data['minimum_nights'] = str(row['minimum_nights'])
-        ele_data['number_of_reviews'] = str(row['number_of_reviews'])
-        ele_data['last_review'] = str(row['last_review'])
-        ele_data['reviews_per_month'] = str(row['reviews_per_month'])
-        ele_data['calculated_host_listings_count'] = str(row['calculated_host_listings_count'])
-        ele_data['availability_365'] = str(row['availability_365'])
-        if count == 0:
-            room_detail.append(ele_data)
-            count += 1
-        else:
-            output.append(ele_data)
-    return jsonify({'single_detail':room_detail,'recommendation': output})
-
-
-
-    #print(result.to_string())
-    #return "yes"
-
-
-
-
-@app.route('/stastic', methods=['GET'])
-@token_required
-def stastic(current_user):
-    if not current_user.admin:
-        return jsonify({'message': 'Non-ADMIN user cannot performe that function'})
-    ops = Oprecord.query.all()
-    output = []
-    for op in ops:
-        op_data = {}
-        op_data['id'] = op.id
-        op_data['user_id'] = op.user_id
-        op_data['location'] = op.location
-        op_data['area'] = op.area
-        op_data['type_room'] = op.type_room
-        op_data['start_date'] = op.start_date
-        op_data['end_date'] = op.end_date
-        op_data['guest'] = op.guest
-        op_data['price_1'] = op.price_1
-        op_data['price_2'] = op.price_2
-        op_data['time'] = op.time_stamp
-        output.append(op_data)
-    return jsonify({'users': output})
-
-
-@api.route('/search_json')
-class SearchResults(Resource):
-    # @token_required
-    @api.expect(search_model, validate=False)
-    def post(self):
-        data = request.form.get('token')
-        token = data
-        if not token:
-            return make_response(jsonify({'message': 'Token is missing!'}), 401)
-        try:
-            _data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(
-                public_id=_data['public_id']).first()
-        except:
-            return make_response(jsonify({'message': 'Token is invalid'}), 401)
-
-        location = request.form.get('location')
-        area = request.form.get('area')
-        type_room = request.form.get('type_room')
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
-        guest = request.form.get('guest')
-        price_1 = request.form.get('price_1')
-        price_2 = request.form.get('price_2')
-        _uid = current_user.public_id
-        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-                    'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-                    'user_id': _uid}
-
-        # first add a admin manully that control other user
         new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
                           price_1=price_1, price_2=price_2)
         db.session.add(new_op)
         db.session.commit()
+        return jsonify(final_res)
 
-        return jsonify(temp_dic)
 
-@app.route('/owner_post', methods=['POST'])
-@token_required
-def owner_post(current_user):
-    #para
-    location = request.form.get('location')
-    area = request.form.get('area')
-    type_room = request.form.get('type_room')
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    guest = request.form.get('guest')
-    price_1 = request.form.get('price_1')
-    price_2 = request.form.get('price_2')
-    if(request.form.get('Available')=='True'):
-        available=True
-    else:
-        available=False
-    _uid = current_user.public_id
-    temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-                'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-                'user_id': _uid}
 
-    # first add a admin manully that control other user
-    new_op = OwnerPost(user_id=current_user.public_id, location=location, area=area,
-                        type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-                        price_1=price_1, price_2=price_2, Available=available)
-    db.session.add(new_op)
-    db.session.commit()
+#token required
+@api.route('/want/<int:id>')
+class UserWant(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="return the recommendation according the room index to user")
+    def get(self, id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-    return jsonify(new_op.__repr__())
+        ml_model = ML_model()
+        ml_model.prep_price_preds(post_pandas)
+        row = ml_model.data.loc[id-1]
+        rt = row["room_type"]
+        ml_model.prep_knn_preds(rt)
+        ml_model.build_knn_model()
+        
+        latitude = row['latitude']
+        longitude = row['longitude']
+        room_type = row['room_type']
+        price = row['price']
+        minimum_nights = row['minimum_nights']
+        
+        
+        result  = ml_model.knn_prediction(latitude,longitude,room_type,price,minimum_nights)
+        
+        room_detail = []
+        output = []
+        count = 0
+        for ind in result:
+            row = post_pandas.loc[ind]
+            ele_data = {}
+            ele_data['id'] = str(ind+1)
+            ele_data['name'] = str(row['name'])
+            ele_data['host_id'] = str(row['host_id'])
+            ele_data['host_name'] = str(row['host_name'])
+            ele_data['neighbourhood_group'] = str(row['neighbourhood_group'])
+            ele_data['neighbourhood'] = str(row['neighbourhood'])
+            ele_data['latitude'] = str(row['latitude'])
+            ele_data['longitude'] = str(row['longitude'])
+            ele_data['room_type'] = str(row['room_type'])
+            ele_data['price'] = str(row['price'])
+            ele_data['minimum_nights'] = str(row['minimum_nights'])
+            ele_data['number_of_reviews'] = str(row['number_of_reviews'])
+            ele_data['last_review'] = str(row['last_review'])
+            ele_data['reviews_per_month'] = str(row['reviews_per_month'])
+            ele_data['calculated_host_listings_count'] = str(row['calculated_host_listings_count'])
+            ele_data['availability_365'] = str(row['availability_365'])
+            if count == 0:
+                room_detail.append(ele_data)
+                count += 1
+            else:
+                output.append(ele_data)
+        return jsonify({'single_detail':room_detail,'recommendation': output})
 
-@app.route('/owner_get', methods=['GET'])
-@token_required
-def owner_get(current_user):
-    records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
-    return jsonify(records=[i.serialize for i in records])
 
-@app.route('/owner_remove/<id>', methods=['POST'])
-@token_required
-def remove_listing(current_user, id):
-    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res.delete()
-    db.session.commit()
-    return "Deleted the post with id {}".format(id)
+@api.route('/stastic')
+class SearchStastic(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Forbidden : Need ADMIN')
+    @api.doc(description="get all the user search records, this function need admin user")
+    def get(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-@app.route('/owner_edit/<id>', methods=['PUT'])
-@token_required
-def edit_listing(current_user, id):
-    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res = res.first()
-    location = request.form.get('location')
-    area = request.form.get('area')
-    type_room = request.form.get('type_room')
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    guest = request.form.get('guest')
-    price_1 = request.form.get('price_1')
-    price_2 = request.form.get('price_2')
-    available = request.form.get('Available')
+        if not current_user.admin:
+            return make_response('message', 403, {'Username': 'need admin user to perform function'})
+        ops = Oprecord.query.all()
+        output = []
+        for op in ops:
+            op_data = {}
+            op_data['id'] = op.id
+            op_data['user_id'] = op.user_id
+            op_data['location'] = op.location
+            op_data['area'] = op.area
+            op_data['type_room'] = op.type_room
+            op_data['start_date'] = op.start_date
+            op_data['end_date'] = op.end_date
+            op_data['guest'] = op.guest
+            op_data['price_1'] = op.price_1
+            op_data['price_2'] = op.price_2
+            op_data['time'] = op.time_stamp
+            output.append(op_data)
+        return jsonify({'users': output})
 
-    res.location = location
-    res.area = area
-    res.type_room = type_room
-    res.start_date = start_date
-    res.end_date = end_date
-    res.guest = guest
-    res.price_1 = price_1
-    res.price_2 = price_2
-    res.available = available
 
-    db.session.commit()
-    return "Edited the post with id {}".format(id)
+###########
+###########
+###########
+###########
+###########
+###########
+# here is Jansen's route need to change to pure json
+
+
+# @app.route('/owner_post', methods=['POST'])
+# @token_required
+# def owner_post(current_user):
+#     #para
+#     location = request.form.get('location')
+#     area = request.form.get('area')
+#     type_room = request.form.get('type_room')
+#     start_date = request.form.get('start_date')
+#     end_date = request.form.get('end_date')
+#     guest = request.form.get('guest')
+#     price_1 = request.form.get('price_1')
+#     price_2 = request.form.get('price_2')
+#     if(request.form.get('Available')=='True'):
+#         available=True
+#     else:
+#         available=False
+#     _uid = current_user.public_id
+#     temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+#                 'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
+#                 'user_id': _uid}
+
+#     # first add a admin manully that control other user
+#     new_op = OwnerPost(user_id=current_user.public_id, location=location, area=area,
+#                         type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
+#                         price_1=price_1, price_2=price_2, Available=available)
+#     db.session.add(new_op)
+#     db.session.commit()
+
+#     return jsonify(new_op.__repr__())
+
+# @app.route('/owner_get', methods=['GET'])
+# @token_required
+# def owner_get(current_user):
+#     records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
+#     return jsonify(records=[i.serialize for i in records])
+
+# @app.route('/owner_remove/<id>', methods=['POST'])
+# @token_required
+# def remove_listing(current_user, id):
+#     res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
+#     if len(res.all()) == 0:
+#         return "Listing does not exist"
+#     res.delete()
+#     db.session.commit()
+#     return "Deleted the post with id {}".format(id)
+
+# @app.route('/owner_edit/<id>', methods=['PUT'])
+# @token_required
+# def edit_listing(current_user, id):
+#     res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
+#     if len(res.all()) == 0:
+#         return "Listing does not exist"
+#     res = res.first()
+#     location = request.form.get('location')
+#     area = request.form.get('area')
+#     type_room = request.form.get('type_room')
+#     start_date = request.form.get('start_date')
+#     end_date = request.form.get('end_date')
+#     guest = request.form.get('guest')
+#     price_1 = request.form.get('price_1')
+#     price_2 = request.form.get('price_2')
+#     available = request.form.get('Available')
+
+#     res.location = location
+#     res.area = area
+#     res.type_room = type_room
+#     res.start_date = start_date
+#     res.end_date = end_date
+#     res.guest = guest
+#     res.price_1 = price_1
+#     res.price_2 = price_2
+#     res.available = available
+
+#     db.session.commit()
+#     return "Edited the post with id {}".format(id)
+###########
+###########
+###########
+###########
+###########
+###########
+
+
 
 #put the public_id you want to subscribe
-@app.route('/subscribe/<public_id>')
-@token_required
-def subscribe(current_user, public_id):
-    user = User.query.filter_by(public_id=public_id).first()
-    if user is None:
-        return "user not exist"
-    if user == current_user:
-        return "wait, are you subscribe yourself?"
-    current_user.follow(user)
-    db.session.commit()
-    return "success!"
 
 
-#put the public_id you want to unsubscribe
-@app.route('/unsubscribe/<public_id>')
-@token_required
-def unsubscribe(current_user, public_id):
-    user = User.query.filter_by(public_id=public_id).first()
-    if user is None:
-        return "user not exist"
-    if user == current_user:
-        return "wait, are you unsubscribe yourself?"
-    current_user.unfollow(user)
-    db.session.commit()
-    return "unscribe success"
+@api.route('/subscribe/<public_id>')
+class SubscribeUser(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="let user subscribe another user through public_id")
+    def get(self, public_id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        user = User.query.filter_by(public_id=public_id).first()
+        if user is None:
+            return "user not exist"
+        if user == current_user:
+            return "wait, are you subscribe yourself?"
+        current_user.follow(user)
+        db.session.commit()
+        return "success!"
+
+@api.route('/unsubscribe/<public_id>')
+class UnSubscribeUser(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="let user unsubscribe another user through public_id")
+    def get(self, public_id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        user = User.query.filter_by(public_id=public_id).first()
+        if user is None:
+            return "user not exist"
+        if user == current_user:
+            return "wait, are you unsubscribe yourself?"
+        current_user.unfollow(user)
+        db.session.commit()
+        return "unscribe success"
 
 
+
+###this part not for swagger , just for patment record
 @app.route('/makepay')
 def makepay():
     return render_template('makepay.html')
