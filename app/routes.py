@@ -138,9 +138,12 @@ class Register_test(Resource):
 @app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'POST':
-        # data = request.get_json()
-        password = request.form.get('name')
-        name = request.form.get('password')
+        data = request.get_json()
+        password = data['password']
+        name = data['name']
+        #password = request.form.get('password')
+        #name = request.form.get('name')
+        print(name); print(password)
         hashed_password = generate_password_hash(password, method='sha256')
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
