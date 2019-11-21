@@ -430,75 +430,6 @@ class UserWant(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Post a new accomodation in")
     @api.expect(owner_model)
-    def post(self):
-        token = None
-        if 'api-token' in request.headers:
-            token = request.headers['api-token']
-        if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = User.query.filter_by(
-                public_id=data['public_id']).first()
-        except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
-
-
-        data = request.get_json()
-        name = data['name']
-        host_id = current_user.public_id
-        host_name = current_user.name
-        neighbourhood_group =data['location']
-        neighbourhood = data['area']
-        latitude = data['latitude']
-        longitude = data['longitude']
-        room_type = data['room_type']
-        price = data['price']
-        minimum_nights = data['minimum_nights']
-        number_of_reviews = data['number_of_reviews']
-        last_review = data['last_review']
-        reviews_per_month = data['reviews_per_month']
-        calculated_host_listings_count = data['calculated_host_listings_count']
-        availability_365 = data['availability_365']
-        
-        
-        temp_dic = {'name': name, 'host_id': host_id
-                    , 'neighbourhood_group': neighbourhood_group
-                    , 'neighbourhood': neighbourhood
-                    , 'latitude': latitude
-                    , 'longitude': longitude
-                    , 'room_type': room_type
-                    , 'price': price
-                    , 'minimum_nights': minimum_nights
-                    , 'number_of_reviews': number_of_reviews
-                    , 'last_review': last_review
-                    , 'reviews_per_month': reviews_per_month
-                    , 'calculated_host_listings_count': calculated_host_listings_count
-                    , 'availability_365': availability_365}
-
-        new_op = Df(name=name
-        , host_id=host_id, host_name=host_name
-        , neighbourhood_group=neighbourhood_group
-        , neighbourhood=neighbourhood
-        , latitude=latitude
-        , longitude=longitude
-        , room_type=room_type
-        , price=price
-        , minimum_nights=minimum_nights
-        , number_of_reviews=number_of_reviews
-        , last_review=last_review
-        , reviews_per_month=reviews_per_month
-        , calculated_host_listings_count=calculated_host_listings_count
-        , availability_365=availability_365)
-        db.session.add(new_op)
-        db.session.commit()
-
-        return jsonify({ "message": "Successful" })
-    @api.response(200, 'Successful')
-    @api.response(400, 'Failed')
-    @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accomodation in")
-    @api.expect(owner_model)
     def put(self):
         token = None
         if 'api-token' in request.headers:
@@ -634,7 +565,7 @@ class SearchStastic(Resource):
 # here is Jansen's route need to change to pure json
 
 
-@app.route('/ownerrr')
+@api.route('/owner')
 class Owner(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
@@ -693,79 +624,79 @@ class Owner(Resource):
 
         return jsonify({ "message": "Successful" })
 
-@app.route('/owner_get', methods=['GET'])
-@token_required
-def owner_get(current_user):
-    print(current_user.public_id)
-    records = Df.query.filter_by(host_id=current_user.public_id).all()
-    return jsonify(records=[i.serialize for i in records])
+# @app.route('/owner_get', methods=['GET'])
+# @token_required
+# def owner_get(current_user):
+#     print(current_user.public_id)
+#     records = Df.query.filter_by(host_id=current_user.public_id).all()
+#     return jsonify(records=[i.serialize for i in records])
 
-@app.route('/owner_remove/<id>', methods=['DELETE'])
-@token_required
-def remove_listing(current_user, id):
-    res = Df.query.filter_by(id=id, host_id=current_user.public_id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res.delete()
-    db.session.commit()
-    return "Deleted the post with id {}".format(id)
+# @app.route('/owner_remove/<id>', methods=['DELETE'])
+# @token_required
+# def remove_listing(current_user, id):
+#     res = Df.query.filter_by(id=id, host_id=current_user.public_id)
+#     if len(res.all()) == 0:
+#         return "Listing does not exist"
+#     res.delete()
+#     db.session.commit()
+#     return "Deleted the post with id {}".format(id)
 
 
-# TODO
-@app.route('/owner_edit/<id>', methods=['PUT'])
-@token_required
-def edit_listing(current_user, id):
-    res = Df.query.filter_by(host_id=current_user.public_id, id=id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res = res.first()
+# # TODO
+# @app.route('/owner_edit/<id>', methods=['PUT'])
+# @token_required
+# def edit_listing(current_user, id):
+#     res = Df.query.filter_by(host_id=current_user.public_id, id=id)
+#     if len(res.all()) == 0:
+#         return "Listing does not exist"
+#     res = res.first()
 
-    name = request.form.get('name')
-    host_id = current_user.public_id
-    host_name = current_user.name
-    neighbourhood_group = request.form.get('location') # REQ
-    neighbourhood = request.form.get('area') # REQ
-    latitude = request.form.get('latitude')
-    longitude = request.form.get('longitude')
-    room_type = request.form.get('room_type') # REQ
-    price = request.form.get('price')
-    minimum_nights = request.form.get('minimum_nights') # REQ
-    number_of_reviews = request.form.get('number_of_reviews')
-    last_review = request.form.get('last_review')
-    reviews_per_month = request.form.get('reviews_per_month')
-    calculated_host_listings_count = request.form.get('calculated_host_listings_count')
-    availability_365 = request.form.get('availability_365') # REQ
+#     name = request.form.get('name')
+#     host_id = current_user.public_id
+#     host_name = current_user.name
+#     neighbourhood_group = request.form.get('location') # REQ
+#     neighbourhood = request.form.get('area') # REQ
+#     latitude = request.form.get('latitude')
+#     longitude = request.form.get('longitude')
+#     room_type = request.form.get('room_type') # REQ
+#     price = request.form.get('price')
+#     minimum_nights = request.form.get('minimum_nights') # REQ
+#     number_of_reviews = request.form.get('number_of_reviews')
+#     last_review = request.form.get('last_review')
+#     reviews_per_month = request.form.get('reviews_per_month')
+#     calculated_host_listings_count = request.form.get('calculated_host_listings_count')
+#     availability_365 = request.form.get('availability_365') # REQ
 
-    res.name = name
-    res.neighbourhood_group = neighbourhood_group
-    res.neighbourhood = neighbourhood
-    res.latitude = latitude
-    res.longitude = longitude
-    res.room_type = room_type
-    res.price = price
-    res.minimum_nights = minimum_nights
-    res.number_of_reviews = number_of_reviews
-    res.last_review = last_review
-    res.reviews_per_month = reviews_per_month
-    res.calculated_host_listings_count = calculated_host_listings_count
-    res.availability_365 = availability_365
+#     res.name = name
+#     res.neighbourhood_group = neighbourhood_group
+#     res.neighbourhood = neighbourhood
+#     res.latitude = latitude
+#     res.longitude = longitude
+#     res.room_type = room_type
+#     res.price = price
+#     res.minimum_nights = minimum_nights
+#     res.number_of_reviews = number_of_reviews
+#     res.last_review = last_review
+#     res.reviews_per_month = reviews_per_month
+#     res.calculated_host_listings_count = calculated_host_listings_count
+#     res.availability_365 = availability_365
 
-    temp_dic = {'name': name, 'host_id': host_id
-        , 'neighbourhood_group': neighbourhood_group
-        , 'neighbourhood': neighbourhood
-        , 'latitude': latitude
-        , 'longitude': longitude
-        , 'room_type': room_type
-        , 'price': price
-        , 'minimum_nights': minimum_nights
-        , 'number_of_reviews': number_of_reviews
-        , 'last_review': last_review
-        , 'reviews_per_month': reviews_per_month
-        , 'calculated_host_listings_count': calculated_host_listings_count
-        , 'availability_365': availability_365}
+#     temp_dic = {'name': name, 'host_id': host_id
+#         , 'neighbourhood_group': neighbourhood_group
+#         , 'neighbourhood': neighbourhood
+#         , 'latitude': latitude
+#         , 'longitude': longitude
+#         , 'room_type': room_type
+#         , 'price': price
+#         , 'minimum_nights': minimum_nights
+#         , 'number_of_reviews': number_of_reviews
+#         , 'last_review': last_review
+#         , 'reviews_per_month': reviews_per_month
+#         , 'calculated_host_listings_count': calculated_host_listings_count
+#         , 'availability_365': availability_365}
 
-    db.session.commit()
-    return jsonify(temp_dic)
+#     db.session.commit()
+#     return jsonify(temp_dic)
 
 #put the public_id you want to subscribe
 
@@ -875,84 +806,217 @@ def execute():
 
 # ===================== CUSTOMER ============================== #
 # For customer to see all their bookings and make new bookings
-@app.route('/book', methods=['GET'])
-@token_required
-def get_list_booking(current_user):
-    booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
-    return jsonify(booking=[i.serialize for i in booking])
+@api.route('/book')
+class GetBooking(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Get all the bookings of the current user")
+    def get(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
+        return jsonify(booking=[i.serialize for i in booking])
 
+# @app.route('/book', methods=['GET'])
+# @token_required
+# def get_list_booking(current_user):
+#     booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
+#     return jsonify(booking=[i.serialize for i in booking])
+@api.route('/book/<id>')
+class MakeBooking(Resource):
+    @api.response(201, 'Booking Created')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Make a booking on an accomodation")
+    def post(self, id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        owner_post = Df.query.filter_by(id=id)
+    
+        if len(owner_post.all()) == 0:
+            return "404, Cant find accomodation"
+        
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        if start_date == "":
+            start_date = "1970-01-01"
+        if end_date == "":
+            end_date = "2021-01-01"
+
+        time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+        time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
+        duration = int((time_e - time_s) / 86400)
+
+        if duration < int(owner_post.first().minimum_nights):
+            return "403, Duration below requirement"
+
+        df_data = owner_post.first()
+        df_data.availability_365 = str(int(df_data.availability_365)-duration)
+
+        booking = Booking(owner_id=owner_post.first().host_id, listing_id=id, renter_id=current_user.public_id, start_date=start_date, end_date=end_date)
+        host_id = owner_post.first().host_id
+        
+        db.session.add(booking)
+        db.session.commit()
+        return "Booking created"
+    @api.response(204, 'Booking Removed')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Cancel a booking")
+    def delete(self, id):
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        booking = Booking.query.filter_by(listing_id=id, renter_id=current_user.public_id)
+        if len(booking.all()) == 0:
+            return "404, Cant find accomodation"
+        
+        booking.delete()
+        db.session.commit()
+        return "Post with id {} is removed".format(id)
 # For customer to post a booking
-@app.route('/book/<id>', methods=['POST'])
-@token_required
-def make_booking(current_user, id):
-    owner_post = Df.query.filter_by(id=id)
+# @app.route('/book/<id>', methods=['POST'])
+# @token_required
+# def make_booking(current_user, id):
+#     owner_post = Df.query.filter_by(id=id)
     
-    if len(owner_post.all()) == 0:
-        return "404, Cant find accomodation"
+#     if len(owner_post.all()) == 0:
+#         return "404, Cant find accomodation"
     
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    if start_date == "":
-        start_date = "1970-01-01"
-    if end_date == "":
-        end_date = "2021-01-01"
+#     start_date = request.form.get('start_date')
+#     end_date = request.form.get('end_date')
+#     if start_date == "":
+#         start_date = "1970-01-01"
+#     if end_date == "":
+#         end_date = "2021-01-01"
 
-    time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
-    time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
-    duration = int((time_e - time_s) / 86400)
+#     time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+#     time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
+#     duration = int((time_e - time_s) / 86400)
 
-    if duration < int(owner_post.first().minimum_nights):
-        return "403, Duration below requirement"
+#     if duration < int(owner_post.first().minimum_nights):
+#         return "403, Duration below requirement"
 
-    df_data = owner_post.first()
-    df_data.availability_365 = str(int(df_data.availability_365)-duration)
+#     df_data = owner_post.first()
+#     df_data.availability_365 = str(int(df_data.availability_365)-duration)
 
-    booking = Booking(owner_id=owner_post.first().host_id, listing_id=id, renter_id=current_user.public_id, start_date=start_date, end_date=end_date)
-    host_id = owner_post.first().host_id
+#     booking = Booking(owner_id=owner_post.first().host_id, listing_id=id, renter_id=current_user.public_id, start_date=start_date, end_date=end_date)
+#     host_id = owner_post.first().host_id
     
-    db.session.add(booking)
-    db.session.commit()
-    return "Booking created"
+#     db.session.add(booking)
+#     db.session.commit()
+#     return "Booking created"
 
 # for customer to cancel their booking
-@app.route('/book/<id>', methods=['DELETE'])
-@token_required
-def del_booking(current_user, id):
-    booking = Booking.query.filter_by(listing_id=id, renter_id=current_user.public_id)
-    if len(booking.all()) == 0:
-        return "404, Cant find accomodation"
+# @app.route('/book/<id>', methods=['DELETE'])
+# @token_required
+# def del_booking(current_user, id):
+#     booking = Booking.query.filter_by(listing_id=id, renter_id=current_user.public_id)
+#     if len(booking.all()) == 0:
+#         return "404, Cant find accomodation"
     
-    booking.delete()
-    db.session.commit()
-    return "Post with id {} is removed".format(id)
+#     booking.delete()
+#     db.session.commit()
+#     return "Post with id {} is removed".format(id)
 
 
 # ===================== OWNER ============================== #
 # For owners to see all their renters
-@app.route('/owner/bookings', methods=['GET'])
-@token_required
-def owner_bookings(current_user):
-    owner_id = request.form.get('owner_id')
-    booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
-    if len(booking) == 0:
-        return "No bookings"
-    return jsonify(booking=[i.serialize for i in booking])
+
+@api.route('/owner/bookings')
+class GetOwnerBookings(Resource):
+    def get(self):
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        owner_id = request.form.get('owner_id')
+        booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
+        if len(booking) == 0:
+            return "No bookings"
+        return jsonify(booking=[i.serialize for i in booking])
+
+# @app.route('/owner/bookings', methods=['GET'])
+# @token_required
+# def owner_bookings(current_user):
+#     owner_id = request.form.get('owner_id')
+#     booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
+#     if len(booking) == 0:
+#         return "No bookings"
+#     return jsonify(booking=[i.serialize for i in booking])
 
 # Delete bookings based on the listing id
-@app.route('/owner/bookings/<int:id>', methods=['DELETE'])
-@token_required
-def del_owner_bookings(current_user, id):
-    booking = Booking.query.filter_by(owner_id=current_user.public_id, listing_id=id).all()
-    if len(booking) == 0:
-        return "Not found"
+@api.route('/owner/bookings/<int:id>')
+class CancelOwnerBookings(Resource):
+    def delete(self, id):
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        booking = Booking.query.filter_by(owner_id=current_user.public_id, listing_id=id).all()
+        if len(booking) == 0:
+            return "Not found"
+        
+        booking.sort(key=lambda x:x.id, reverse=True)
+        booking_id = booking[0].id
+        print(booking_id)
+        tmp = Booking.query.filter_by(id=booking_id)
+        tmp.delete()
+        db.session.commit()
+        return "Deleted booking of accomodation with listing_id of {}".format(id)
+# @app.route('/owner/bookings/<int:id>', methods=['DELETE'])
+# @token_required
+# def del_owner_bookings(current_user, id):
+#     booking = Booking.query.filter_by(owner_id=current_user.public_id, listing_id=id).all()
+#     if len(booking) == 0:
+#         return "Not found"
     
-    booking.sort(key=lambda x:x.id, reverse=True)
-    booking_id = booking[0].id
-    print(booking_id)
-    tmp = Booking.query.filter_by(id=booking_id)
-    tmp.delete()
-    db.session.commit()
-    return "Deleted booking of accomodation with listing_id of {}".format(id)
+#     booking.sort(key=lambda x:x.id, reverse=True)
+#     booking_id = booking[0].id
+#     print(booking_id)
+#     tmp = Booking.query.filter_by(id=booking_id)
+#     tmp.delete()
+#     db.session.commit()
+#     return "Deleted booking of accomodation with listing_id of {}".format(id)
 
 
 # @app.route('/book', methods=['POST'])
