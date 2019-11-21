@@ -424,27 +424,20 @@ class SearchResults(Resource):
         guest = request.form.get('guest')
         price_1 = request.form.get('price_1')
         price_2 = request.form.get('price_2')
-        # _uid = current_user.public_id
-        # temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-        #             'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-        #             'user_id': _uid}
+        _uid = current_user.public_id
+        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
+                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
+                     'user_id': _uid}
 
         # first add a admin manully that control other user
-        # new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
-        #                   type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-        #                   price_1=price_1, price_2=price_2)
-        # db.session.add(new_op)
-        # db.session.commit()
+        new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
+                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
+                           price_1=price_1, price_2=price_2)
+        db.session.add(new_op)
+        db.session.commit()
 
-        result = []
-        location = {
-            "name": "Matt Giancarlo",
-            "location": "New York",
-            "price": 200
-        }
-        result.append(location)
 
-        return jsonify(result)
+        return jsonify(temp_dic)
 
 @app.route('/owner_post', methods=['POST'])
 @token_required
