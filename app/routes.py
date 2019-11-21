@@ -257,7 +257,7 @@ return make_response('message', 403, {'Username': 'need admin user to perform fu
 '''
 
 
-##token required
+##room type accept the input private room / shared room / etc, room name can be part of the full name
 @api.route('/search')
 class SearchRoom(Resource):
     @api.response(200, 'Successful')
@@ -323,7 +323,7 @@ class SearchRoom(Resource):
                             ).all()
         #print(during_time)
         except:
-            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer'})
+            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:private room '})
 
         final_res = []
 
