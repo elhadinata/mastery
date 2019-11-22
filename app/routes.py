@@ -367,7 +367,29 @@ owner_model = api.model('accomodation', {
     'calculated_host_listings_count': fields.String,
     'availability_365': fields.String,
 })
-#token required
+
+@api.route('/accomodation/<int:id>/details')
+class Details(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="return the recommendation according the room index to user")
+    def get(self, id):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+        record = Df.query.filter_by(host_id=current_user.public_id).first()
+        return jsonify(record=record.serialize)
+
+
 @api.route('/accomodation/<int:id>')
 class UserAccomodation(Resource):
     @api.response(200, 'Successful')
@@ -431,9 +453,7 @@ class UserAccomodation(Resource):
                 output.append(ele_data)
         return jsonify({'single_detail':room_detail,'recommendation': output})
         
-        # record = Df.query.filter_by(host_id=current_user.public_id).first()
-        # return jsonify(record=record.serialize)
-
+        
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
