@@ -282,19 +282,13 @@ class SearchRoom(Resource):
         try:
 
             time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
-
-            # TODO check constraint
             time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
-
 
             during_time = int((time_e - time_s) / 86400)
             if price_1 == "":
                 price_1 = 0
             if price_2 == "":
                 price_2 = 9999999
-
-
-
 
             qq = Df.query.filter(Df.neighbourhood_group.ilike("%" + location + "%"),
                         Df.neighbourhood.ilike("%" + area + "%"),
@@ -360,7 +354,7 @@ owner_model = api.model('accomodation', {
 class Details(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="return the recommendation according the room index to user")
+    @api.doc(description="return the details of the room according to the index")
     def get(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -515,13 +509,13 @@ class UserAccomodation(Resource):
         global mi_pandas, st_pandas, post_pandas
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
         
-        return jsonify({ "message": "Successful" })
+        return { "message": "Successfully Updated" }, 200
 
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accommodation listing.")
+    @api.doc(description="Remove an accommodation.")
     def delete(self):
         token = None
         if 'api-token' in request.headers:
@@ -540,15 +534,14 @@ class UserAccomodation(Resource):
             return "Listing does not exist"
         res.delete()
         db.session.commit()
-        return "Deleted the post with id {}".format(id)
-
+        return {"message": "Deleted the post with id {}".format(id)}, 200
 
 @api.route('/statistics')
 class SearchStatistics(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="Get all user search records, this function requires admin user.")
+    @api.response(403, 'Forbidden : Admin priviledges required')
+    @api.doc(description="Get all user search records, this function is available only to admin")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -563,7 +556,7 @@ class SearchStatistics(Resource):
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
         if not current_user.admin:
-            return make_response('message', 403, {'Username': 'need admin user to perform function'})
+            return make_response('message', 403, {'Username': 'Admin priviledges required to perform action'})
         ops = Oprecord.query.all()
         output = []
         for op in ops:
@@ -660,6 +653,8 @@ class Accomodation(Resource):
 class SubscribeUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Cannot subscribe yourself')
+    @api.response(404, 'User not found')
     @api.doc(description="Let a user subscribe to another user with public_id")
     def get(self, public_id):
         token = None
@@ -676,18 +671,20 @@ class SubscribeUser(Resource):
 
         user = User.query.filter_by(public_id=public_id).first()
         if user is None:
-            return "user not exist"
+            return make_response('message', 404, {'User': 'User does not exist'})
         if user == current_user:
-            return "wait, are you subscribe yourself?"
+            return make_response('message', 403, {'User': 'Cannot unsubscribe to yourself'})
         current_user.follow(user)
         db.session.commit()
-        return "success!"
+        return jsonify({ "message": "Successfully subscribed"}), 200
 
 
 @api.route('/unsubscribe/<public_id>')
 class UnSubscribeUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
+    @api.response(403, 'Cannot unsubscribe yourself')
+    @api.response(404, 'User not found')
     @api.doc(description="Let a user unsubscribe from another user with public_id")
     def get(self, public_id):
         token = None
@@ -703,12 +700,12 @@ class UnSubscribeUser(Resource):
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         user = User.query.filter_by(public_id=public_id).first()
         if user is None:
-            return "user not exist"
+            return make_response('message', 404, {'User': 'User does not exist'})
         if user == current_user:
-            return "wait, are you unsubscribe yourself?"
+            return make_response('message', 403, {'User': 'Cannot unsubscribe from yourself'})
         current_user.unfollow(user)
         db.session.commit()
-        return "unscribe success"
+        return jsonify({ "message": "Successfully unsubscribed"}), 200
 
 
 @app.route('/makepay')
@@ -786,6 +783,7 @@ class GetBooking(Resource):
 class MakeBooking(Resource):
     @api.response(201, 'Booking Created')
     @api.response(401, 'Token is missing or Invalid')
+    @api.response(406, 'Invalid information supplied')
     @api.doc(description="Make a booking on an accomodation")
     def post(self, id):
         token = None
@@ -803,7 +801,7 @@ class MakeBooking(Resource):
         owner_post = Df.query.filter_by(id=id)
     
         if len(owner_post.all()) == 0:
-            return "404, Cant find accomodation"
+            return make_response('message', 404, {'Accomodation': 'Cannot find accommodation'})
         
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
@@ -817,8 +815,8 @@ class MakeBooking(Resource):
         duration = int((time_e - time_s) / 86400)
 
         if duration < int(owner_post.first().minimum_nights):
-            return "403, Duration below requirement"
-
+            return make_response('message', 406, {'Date': 'Length of stay below requirement'})
+        
         df_data = owner_post.first()
         df_data.availability_365 = str(int(df_data.availability_365)-duration)
 
@@ -832,6 +830,7 @@ class MakeBooking(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Cancel a booking")
     def delete(self, id):
+        token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
@@ -845,7 +844,7 @@ class MakeBooking(Resource):
 
         booking = Booking.query.filter_by(listing_id=id, renter_id=current_user.public_id)
         if len(booking.all()) == 0:
-            return "404, Cant find accomodation"
+            return make_response('message', 404, {'Accomodation': 'Cannot find accommodation'})
         
         booking.delete()
         db.session.commit()
@@ -860,6 +859,7 @@ class GetOwnerBookings(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Get all of owner's bookings.")
     def get(self):
+        token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
@@ -880,10 +880,11 @@ class GetOwnerBookings(Resource):
 
 @api.route('/owner/bookings/<int:id>')
 class CancelOwnerBookings(Resource):
-    @api.response(204, 'Booking Cancelled')
+    @api.response(200, 'Booking Cancelled')
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Let owner cancel a booking with listing_id.")
     def delete(self, id):
+        token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
@@ -897,7 +898,7 @@ class CancelOwnerBookings(Resource):
 
         booking = Booking.query.filter_by(owner_id=current_user.public_id, listing_id=id).all()
         if len(booking) == 0:
-            return "Not found"
+            return jsonify(booking=[])
         
         booking.sort(key=lambda x:x.id, reverse=True)
         booking_id = booking[0].id
@@ -905,4 +906,4 @@ class CancelOwnerBookings(Resource):
         tmp = Booking.query.filter_by(id=booking_id)
         tmp.delete()
         db.session.commit()
-        return "Deleted booking of accomodation with listing_id of {}".format(id)
+        return {"message":"Deleted booking of accomodation with listing_id of {}".format(id)}, 200
