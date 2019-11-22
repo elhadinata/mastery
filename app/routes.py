@@ -26,61 +26,61 @@ paypalrestsdk.configure({
   "client_id": "AS9hENrxNu3ih4aoEKWdVcgSM3VWsKn7wPFE01C5C6fOneALiB6PmASnNpGPzwDOm9WTll6h_9gk3mla",
   "client_secret": "EJfjLG8mh3pi9AKaN97Sr7ackqvk6cUhD7zTAcy2d1IqPG_jPSP46hdbFviXzto_SWxksROVwajlIhS2" })
 
-# def get_data_cluster():
-#     mmm = Michelin.query.all()
-#     sss = Station.query.all()
-#     ddd = Df.query.all()
-#     mi_res = []
-#     for mm in mmm:
-#         mi_rec = {}
-#         mi_rec['name'] = mm.name
-#         mi_rec['year'] = mm.year
-#         mi_rec['latitude'] = mm.latitude
-#         mi_rec['longitude'] = mm.longitude
-#         mi_rec['city'] = mm.city
-#         mi_rec['cuisine'] = mm.cuisine
-#         mi_rec['price'] = mm.price
-#         mi_rec['url'] = mm.url
-#         mi_rec['star'] = mm.star
-#         mi_res.append(mi_rec)
-#     df_mi = pd.DataFrame(mi_res)
+def get_data_cluster():
+    mmm = Michelin.query.all()
+    sss = Station.query.all()
+    ddd = Df.query.all()
+    mi_res = []
+    for mm in mmm:
+        mi_rec = {}
+        mi_rec['name'] = mm.name
+        mi_rec['year'] = mm.year
+        mi_rec['latitude'] = mm.latitude
+        mi_rec['longitude'] = mm.longitude
+        mi_rec['city'] = mm.city
+        mi_rec['cuisine'] = mm.cuisine
+        mi_rec['price'] = mm.price
+        mi_rec['url'] = mm.url
+        mi_rec['star'] = mm.star
+        mi_res.append(mi_rec)
+    df_mi = pd.DataFrame(mi_res)
 
-#     sta_bus = []
-#     for ss in sss:
-#         sta_rec = {}
-#         sta_rec['station_name'] = ss.station_name
-#         sta_rec['_type'] = ss._type
-#         sta_rec['latitude'] = ss.latitude
-#         sta_rec['longitude'] = ss.longitude
-#         sta_bus.append(sta_rec)
+    sta_bus = []
+    for ss in sss:
+        sta_rec = {}
+        sta_rec['station_name'] = ss.station_name
+        sta_rec['_type'] = ss._type
+        sta_rec['latitude'] = ss.latitude
+        sta_rec['longitude'] = ss.longitude
+        sta_bus.append(sta_rec)
 
-#     df_st = pd.DataFrame(sta_bus)
-
-
-#     his_post = []
-#     for dd in ddd:
-#         his_rec = {}
-#         his_rec['name'] = dd.name
-#         his_rec['host_id'] = dd.host_id
-#         his_rec['host_name'] = dd.host_name
-#         his_rec['neighbourhood_group'] = dd.neighbourhood_group
-#         his_rec['neighbourhood'] = dd.neighbourhood
-#         his_rec['latitude'] = dd.latitude
-#         his_rec['longitude'] = dd.longitude
-#         his_rec['room_type'] = dd.room_type
-#         his_rec['price'] = dd.price
-#         his_rec['minimum_nights'] = dd.minimum_nights
-#         his_rec['number_of_reviews'] = dd.number_of_reviews
-#         his_rec['last_review'] = dd.last_review
-#         his_rec['reviews_per_month'] = dd.reviews_per_month
-#         his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
-#         his_rec['availability_365'] = dd.availability_365
-#         his_post.append(his_rec)
-#     df_po = pd.DataFrame(his_post)
-#     return df_mi, df_st, df_po
+    df_st = pd.DataFrame(sta_bus)
 
 
-# mi_pandas, st_pandas, post_pandas = get_data_cluster()
+    his_post = []
+    for dd in ddd:
+        his_rec = {}
+        his_rec['name'] = dd.name
+        his_rec['host_id'] = dd.host_id
+        his_rec['host_name'] = dd.host_name
+        his_rec['neighbourhood_group'] = dd.neighbourhood_group
+        his_rec['neighbourhood'] = dd.neighbourhood
+        his_rec['latitude'] = dd.latitude
+        his_rec['longitude'] = dd.longitude
+        his_rec['room_type'] = dd.room_type
+        his_rec['price'] = dd.price
+        his_rec['minimum_nights'] = dd.minimum_nights
+        his_rec['number_of_reviews'] = dd.number_of_reviews
+        his_rec['last_review'] = dd.last_review
+        his_rec['reviews_per_month'] = dd.reviews_per_month
+        his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
+        his_rec['availability_365'] = dd.availability_365
+        his_post.append(his_rec)
+    df_po = pd.DataFrame(his_post)
+    return df_mi, df_st, df_po
+
+# global variable
+mi_pandas, st_pandas, post_pandas = get_data_cluster()
 
 
 
@@ -119,9 +119,15 @@ class UserRegister(Resource):
         data = request.get_json()
         password = data['password']
         name = data['username']
+        print(name+' '+password)
         user = User.query.filter_by(name = name).first()
         if user:
             return make_response('Repeat Username!', 401, {'Username': 'username conflict!"'})
+        
+        hashed_password = generate_password_hash(password, method='sha256')
+        new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
+        db.session.add(new_user)
+        db.session.commit()
         return jsonify({ "message": "User registered" })
 #make_response('message', 401, {'Username': 'Token is missing!'})
 
@@ -362,8 +368,8 @@ owner_model = api.model('accomodation', {
     'availability_365': fields.String,
 })
 #token required
-@api.route('/owner/<int:id>')
-class UserWant(Resource):
+@api.route('/accomodation/<int:id>')
+class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="return the recommendation according the room index to user")
@@ -424,7 +430,10 @@ class UserWant(Resource):
             else:
                 output.append(ele_data)
         return jsonify({'single_detail':room_detail,'recommendation': output})
-    
+        
+        # record = Df.query.filter_by(host_id=current_user.public_id).first()
+        # return jsonify(record=record.serialize)
+
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
@@ -496,7 +505,9 @@ class UserWant(Resource):
         res.availability_365 = availability_365
 
         db.session.commit()
-
+        global mi_pandas, st_pandas, post_pandas
+        mi_pandas, st_pandas, post_pandas = get_data_cluster()
+        
         return jsonify({ "message": "Successful" })
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
@@ -565,20 +576,32 @@ class SearchStastic(Resource):
 # here is Jansen's route need to change to pure json
 
 
-@api.route('/owner')
-class Owner(Resource):
+@api.route('/accomodation')
+class Accomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Post a new accomodation in")
     @api.expect(owner_model)
     def post(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
         data = request.get_json()
         name = data['name']
-        host_id = data['host_id']
-        host_name = data['host_name']
-        neighbourhood_group =data['location']
-        neighbourhood = data['area']
+        host_id = current_user.public_id
+        host_name = current_user.name
+        neighbourhood_group =data['neighbourhood_group']
+        neighbourhood = data['neighbourhood']
         latitude = data['latitude']
         longitude = data['longitude']
         room_type = data['room_type']
@@ -621,7 +644,8 @@ class Owner(Resource):
         , availability_365=availability_365)
         db.session.add(new_op)
         db.session.commit()
-
+        global mi_pandas, st_pandas, post_pandas
+        mi_pandas, st_pandas, post_pandas = get_data_cluster()
         return jsonify({ "message": "Successful" })
 
 
@@ -756,7 +780,7 @@ class GetBooking(Resource):
 # def get_list_booking(current_user):
 #     booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
 #     return jsonify(booking=[i.serialize for i in booking])
-@api.route('/book/<id>')
+@api.route('/book/<int:id>')
 class MakeBooking(Resource):
     @api.response(201, 'Booking Created')
     @api.response(401, 'Token is missing or Invalid')
