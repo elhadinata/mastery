@@ -3,7 +3,9 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import  Api, fields
 import pandas as pd
-from flask_cors import CORS
+# from flask_restplus import cors
+
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(Config)

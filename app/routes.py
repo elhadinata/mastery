@@ -20,6 +20,7 @@ from flask_restplus import fields
 from flask_restplus import inputs
 from flask_restplus import reqparse
 from sqlalchemy import or_, and_
+from flask_cors import CORS, cross_origin
 
 paypalrestsdk.configure({
   "mode": "sandbox", # sandbox or live
@@ -128,7 +129,7 @@ class UserRegister(Resource):
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({ "message": "User successfully registered" })
+        return make_response(jsonify({ "message": "User successfully registered" }), 200)
 
 
 @api.route('/userlist')
@@ -225,8 +226,9 @@ class TokenGeneration(Resource):
         if check_password_hash(user.password, password):
             token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow(
             )+datetime.timedelta(minutes=60)}, app.config['SECRET_KEY'])
-            return jsonify({'token': token.decode('UTF-8')})
+            return make_response(jsonify({'token': token.decode('UTF-8')}), 200)
         return make_response('Could not verify', 401, {'www-auth': 'basic realm="authentication required!"'})
+
 
 search_model = api.model('search', {
     'location': fields.String,
@@ -238,7 +240,6 @@ search_model = api.model('search', {
     'price_1': fields.String,
     'price_2': fields.String
 })
-
 
 @api.route('/search')
 class SearchRoom(Resource):
