@@ -368,7 +368,7 @@ class Details(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-        record = Df.query.filter_by(host_id=current_user.public_id).first()
+        record = Df.query.filter_by(id=id).first()
         return jsonify(record=record.serialize)
 
 
