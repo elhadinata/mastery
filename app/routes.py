@@ -390,7 +390,7 @@ class PricePrediction(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accommodation listing.")
+    @api.doc(description="Provide price suggestions according to host's room information.")
     @api.expect(price_pred_model)
     def put(self):
         token = None
