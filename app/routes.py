@@ -112,8 +112,8 @@ register_model = api.model('register', {
 @api.route('/user_register')
 class UserRegister(Resource):
     @api.response(200, 'Successful')
-    @api.response(401, 'Repeat Username!')
-    @api.doc(description="user register")
+    @api.response(401, 'Username already exists!')
+    @api.doc(description="User registration.")
     @api.expect(register_model, validate=True)
     def post(self):
         data = request.get_json()
@@ -122,38 +122,35 @@ class UserRegister(Resource):
         print(name+' '+password)
         user = User.query.filter_by(name = name).first()
         if user:
-            return make_response('Repeat Username!', 401, {'Username': 'username conflict!"'})
+            return make_response('Username already exists!', 401, {'Username': 'username already exists!"'})
         
         hashed_password = generate_password_hash(password, method='sha256')
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({ "message": "User registered" })
-#make_response('message', 401, {'Username': 'Token is missing!'})
+        return jsonify({ "message": "User successfully registered" })
+
 
 @api.route('/userlist')
 class GetUserList(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="get all the user list, this function need admin user")
+    @api.doc(description="Get all the users list, this function requires admin user.")
     def get(self):
         token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
             return make_response('message', 401, {'Username': 'Token is missing!'})
-            #return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
-            #return make_response('message', 401, {'Username': 'Token is Invalid!'})
         if not current_user.admin:
             make_response('message', 403, {'Username': 'need admin user'})
-            #return make_response('message', 403, {'Username': 'need admin user to perform function'})
         users = User.query.all()
         output = []
         for user in users:
@@ -166,13 +163,12 @@ class GetUserList(Resource):
         return jsonify({'users': output})
 
 
-#input public userid
 @api.route('/user/<public_id>')
 class GetOneUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="Get single user from the public_id, this function need admin user")
+    @api.doc(description="Get a single user by their public_id, this function requires admin user.")
     def get(self,public_id):
         token = None
         if 'api-token' in request.headers:
@@ -200,23 +196,22 @@ class GetOneUser(Resource):
         return jsonify({'user': user_data})
 
 
-
-
 credential_model = api.model('credential', {
     'username': fields.String,
     'password': fields.String
 })
 
+
 credential_parser = reqparse.RequestParser()
 credential_parser.add_argument('username', type=str)
 credential_parser.add_argument('password', type=str)
 
-# sig_lg
+
 @api.route('/token')
 class TokenGeneration(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Generates a authentication token")
+    @api.doc(description="Generates a authentication token.")
     @api.expect(credential_parser, validate=True)
     def get(self):
         args = credential_parser.parse_args()
@@ -244,21 +239,14 @@ search_model = api.model('search', {
     'price_2': fields.String
 })
 
-'''
-return make_response('message', 401, {'Username': 'Token is missing!'})
-return make_response('message', 401, {'Username': 'Token is Invalid!'})
-return make_response('message', 403, {'Username': 'need admin user to perform function'})
-'''
 
-
-##room type accept the input private room / shared room / etc, room name can be part of the full name
 @api.route('/search')
 class SearchRoom(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
     @api.response(406, 'Input format error')
-    @api.doc(description="Search the room you want, leave the empty string that you don't want to put")
+    @api.doc(description="Search for the room you want, leave empty parameters you don't want to input")
     @api.expect(search_model)
     def post(self):
         token = None
@@ -315,7 +303,6 @@ class SearchRoom(Resource):
                         (Df.price >= int(price_1)),
                         (Df.price <= int(price_2))
                             ).all()
-        #print(during_time)
         except:
             return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:private room '})
 
@@ -367,12 +354,13 @@ owner_model = api.model('accomodation', {
     'calculated_host_listings_count': fields.String,
     'availability_365': fields.String,
 })
-#token required
+
+
 @api.route('/accomodation/<int:id>')
 class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="return the recommendation according the room index to user")
+    @api.doc(description="Return recommendations according to room index.")
     def get(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -430,14 +418,12 @@ class UserAccomodation(Resource):
             else:
                 output.append(ele_data)
         return jsonify({'single_detail':room_detail,'recommendation': output})
-        
-        # record = Df.query.filter_by(host_id=current_user.public_id).first()
-        # return jsonify(record=record.serialize)
+
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accomodation in")
+    @api.doc(description="Post a new accommodation listing.")
     @api.expect(owner_model)
     def put(self):
         token = None
@@ -509,10 +495,12 @@ class UserAccomodation(Resource):
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
         
         return jsonify({ "message": "Successful" })
+
+
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accomodation in")
+    @api.doc(description="Post a new accommodation listing.")
     def delete(self):
         token = None
         if 'api-token' in request.headers:
@@ -533,12 +521,13 @@ class UserAccomodation(Resource):
         db.session.commit()
         return "Deleted the post with id {}".format(id)
 
-@api.route('/stastic')
-class SearchStastic(Resource):
+
+@api.route('/statistics')
+class SearchStatistics(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="get all the user search records, this function need admin user")
+    @api.doc(description="Get all user search records, this function requires admin user.")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -573,15 +562,12 @@ class SearchStastic(Resource):
         return jsonify({'users': output})
 
 
-# here is Jansen's route need to change to pure json
-
-
-@api.route('/accomodation')
+@api.route('/accommodation')
 class Accomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accomodation in")
+    @api.doc(description="Post a new accommodation listing.")
     @api.expect(owner_model)
     def post(self):
         token = None
@@ -649,12 +635,11 @@ class Accomodation(Resource):
         return jsonify({ "message": "Successful" })
 
 
-#put the public_id you want to subscribe
 @api.route('/subscribe/<public_id>')
 class SubscribeUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="let user subscribe another user through public_id")
+    @api.doc(description="Let a user subscribe to another user with public_id")
     def get(self, public_id):
         token = None
         if 'api-token' in request.headers:
@@ -677,11 +662,12 @@ class SubscribeUser(Resource):
         db.session.commit()
         return "success!"
 
+
 @api.route('/unsubscribe/<public_id>')
 class UnSubscribeUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="let user unsubscribe another user through public_id")
+    @api.doc(description="Let a user unsubscribe from another user with public_id")
     def get(self, public_id):
         token = None
         if 'api-token' in request.headers:
@@ -704,8 +690,6 @@ class UnSubscribeUser(Resource):
         return "unscribe success"
 
 
-
-###this part not for swagger , just for patment record
 @app.route('/makepay')
 def makepay():
     return render_template('makepay.html')
@@ -725,11 +709,11 @@ def payment():
                 "items": [{
                     "name": "testitem",
                     "sku": "12345",
-                    "price": "20.00",   #change the value at here
+                    "price": "20.00",
                     "currency": "USD",
                     "quantity": 1}]},
             "amount": {
-                "total": "20.00",       #change total also here
+                "total": "20.00",
                 "currency": "USD"},
             "description": "This is the payment transaction description."}]})
 
@@ -737,8 +721,8 @@ def payment():
         print('Payment success!')
     else:
         print(payment.error)
-
     return jsonify({'paymentID' : payment.id})
+
 
 @app.route('/execute', methods=['POST'])
 def execute():
@@ -752,6 +736,7 @@ def execute():
     else:
         print(payment.error)
     return jsonify({'success' : success})
+
 
 # ===================== CUSTOMER ============================== #
 # For customer to see all their bookings and make new bookings
@@ -775,11 +760,7 @@ class GetBooking(Resource):
         booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
         return jsonify(booking=[i.serialize for i in booking])
 
-# @app.route('/book', methods=['GET'])
-# @token_required
-# def get_list_booking(current_user):
-#     booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
-#     return jsonify(booking=[i.serialize for i in booking])
+
 @api.route('/book/<int:id>')
 class MakeBooking(Resource):
     @api.response(201, 'Booking Created')
@@ -849,10 +830,14 @@ class MakeBooking(Resource):
         db.session.commit()
         return "Post with id {} is removed".format(id)
 
+
 # ===================== OWNER ============================== #
 # For owners to see all their renters
 @api.route('/owner/bookings')
 class GetOwnerBookings(Resource):
+    @api.response(200, 'Successful')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Get all of owner's bookings.")
     def get(self):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
@@ -868,12 +853,15 @@ class GetOwnerBookings(Resource):
         owner_id = request.form.get('owner_id')
         booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
         if len(booking) == 0:
-            return "No bookings"
+            return jsonify({ "message" : "No bookings found" })
         return jsonify(booking=[i.serialize for i in booking])
 
 
 @api.route('/owner/bookings/<int:id>')
 class CancelOwnerBookings(Resource):
+    @api.response(204, 'Booking Cancelled')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Let owner cancel a booking with listing_id.")
     def delete(self, id):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
