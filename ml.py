@@ -118,36 +118,24 @@ class ML_model:
     
     
     
-    def build_price_model(self):
-        X = self.data.drop("price",axis=1).values
-        y = self.data["price"].values
+    def build_price_model(self, input_rt):
+        
+        rt =self.data['room_type'] ==input_rt
+        
+        pri_df = self.data[rt].copy()
+    
+    
+        X = pri_df.drop("price",axis=1).values
+        y = pri_df["price"].values
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=66)
 
         #model = RandomForestRegressor(n_estimators=110, max_depth=10)
         self.price_model.fit(X_train,y_train)
         
-        '''
-       # neighbourhood_group', 'neighbourhood', 'latitude', 'longitude',
-       #'room_type', 'price', 'minimum_nights', 'number_of_reviews',
-       #'reviews_per_month', 'calculated_host_listings_count',
-       #'availability_365'
-        ng = self.ng_dict[]
-        n  = self.n_dict[]
-        lat = self.geo_dict[ng][n][0]
-        lng = self.geo_dict[ng][n][1]
-        rt = []
-        mn = self.data["price"].mean(skipna = True) 
-        nr = self.data["number_of_reviews"].mean(skipna = True) 
-        rpm = self.data["reviews_per_month"].mean(skipna = True) 
-        chlc = self.data["calculated_host_listings_count"].mean(skipna = True)
-        avai = self.data["availability_365"].mean(skipna = True)
-        
-        
-        query = [[ng,b,lat,lng,rt,mn,nr,rpm,chlc,avai]]
-        '''
-        preds = self.price_model.predict(X_test)
+       
+        #preds = self.price_model.predict(X_test)
         #print(X_test)
-        return mean_squared_error(y_test,preds)
+        #return mean_squared_error(y_test,preds)
         
     def build_knn_model(self):
         
@@ -175,14 +163,57 @@ class ML_model:
                 #print(row.to_string)
         return result
         
-    def price_prediction(self, df,queries=[]):
+    def price_prediction(self, query):
                 
+       
+      
         
+        if query['neighbourhood_group'] not in self.ng_dict:
+            ng = self.ng_dict["Central Region"]
+        else:
+            ng =  self.ng_dict[query['neighbourhood_group']]
+            
+        if query['neighbourhood'] not in self.n_dict:
+            n = self.n_dict["Queenstown"]
+        else:
+            n =  self.n_dict[query['neighbourhood']]
+        
+        if query['latitude'] == "":
+           lat = self.geo_dict[ng][n][0]
+        else:
+           lat =  float(query['latitude'])
+           
+        if query['longitude'] == "":
+           lng = self.geo_dict[ng][n][1]
+        else:
+           lng = float(query['longitude'])
+           
+        if query['room_type'] == "":
+           rt = 0
+        else:
+           rt = self.rt_dict[query['room_type']]
+           
+        if query['minimum_nights'] == "":
+           mn = self.data["minimum_nights"].mean(skipna = True) 
+        else:
+           mn = int(query['minimum_nights'])  
+          
+           
+        nr = self.data["number_of_reviews"].mean(skipna = True) 
+        rpm = self.data["reviews_per_month"].mean(skipna = True) 
+        chlc = self.data["calculated_host_listings_count"].mean(skipna = True)
 
+        if query["availability_365"] == "":
+        
+            avai = self.data["availability_365"].mean(skipna = True)
+        else:
+            avai = int(query["availability_365"])
+   
+        query = [[ng,n,lat,lng,rt,mn,nr,rpm,chlc,avai]]
 
-        preds = self.price_model.predict(X_test)
-        print(X_test)
-        return mean_squared_error(y_test,preds)
-
+        preds = self.price_model.predict(query)
+        #print(X_test)
+        #return mean_squared_error(y_test,preds)
+        return preds
     
-    
+   

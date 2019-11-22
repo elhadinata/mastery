@@ -349,6 +349,17 @@ owner_model = api.model('accomodation', {
     'availability_365': fields.String,
 })
 
+price_pred_model = api.model('accomodation', {
+    'name': fields.String,
+    'location': fields.String,
+    'area': fields.String,
+    'latitude': fields.String,
+    'longitude': fields.String,
+    'room_type': fields.String,
+    'minimum_nights': fields.String,
+    'availability_365': fields.String,
+})
+
 
 @api.route('/accomodation/<int:id>/details')
 class Details(Resource):
@@ -369,7 +380,70 @@ class Details(Resource):
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
         record = Df.query.filter_by(host_id=current_user.public_id).first()
+        if record is None:
+            return jsonify(record=[])
         return jsonify(record=record.serialize)
+
+@api.route('/priceadvice')
+class PricePrediction(Resource):
+    
+    @api.response(200, 'Successful')
+    @api.response(400, 'Failed')
+    @api.response(401, 'Token is missing or Invalid')
+    @api.doc(description="Post a new accommodation listing.")
+    @api.expect(price_pred_model)
+    def put(self):
+        token = None
+        if 'api-token' in request.headers:
+            token = request.headers['api-token']
+        if not token:
+            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = User.query.filter_by(
+                public_id=data['public_id']).first()
+        except:
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+
+  
+        data = request.get_json()
+  
+
+        query = {}
+        query['name'] = data['name']
+        query['neighbourhood_group'] =data['location']
+        query['neighbourhood'] = data['area']
+        query['latitude'] = data['latitude']
+        query['longitude'] = data['longitude']
+        query['room_type'] = data['room_type']
+        query['minimum_nights'] = data['minimum_nights']
+        query['availability_365'] = data['availability_365']
+        
+       
+
+        ml_model = ML_model()
+        ml_model.prep_price_preds(post_pandas)
+        if data['room_type'] =="":
+            rt = 0
+        else:
+            rt = ml_model.rt_dict[data['room_type']]
+        ml_model.build_price_model(rt)
+        
+        
+        
+        result  = ml_model.price_prediction(query)
+        #print(result)
+        lower = int(result[0])-15
+        upper = int(result[0])+15
+        return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
+
+
+
+
+       
+
+
+
 
 
 @api.route('/accomodation/<int:id>')
