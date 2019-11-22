@@ -3,8 +3,9 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_restplus import  Api, fields
 import pandas as pd
-
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 api = Api(app, authorizations={
