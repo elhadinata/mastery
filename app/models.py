@@ -1,9 +1,6 @@
 from app import app, db
 from datetime import datetime
 
-
-
-
 followers = db.Table(
     'followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('user.public_id')),
@@ -16,6 +13,7 @@ class User(db.Model):
     name = db.Column(db.String(50))
     password = db.Column(db.String(80))
     posts = db.relationship('OwnerPost', backref='author', lazy='dynamic')
+    # booked_house = db.relationship('Booking', backref='renter')
     admin = db.Column(db.Boolean)
     followed = db.relationship('User', secondary=followers,
         primaryjoin=(followers.c.follower_id == public_id),
@@ -59,6 +57,7 @@ class Oprecord(db.Model):
 
 class OwnerPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    booking = db.relationship('Booking', backref='booked_post')
     user_id = db.Column(db.String(50),db.ForeignKey('user.public_id'), index=True)
     location = db.Column(db.String(50))
     area = db.Column(db.String(50))
@@ -87,9 +86,24 @@ class OwnerPost(db.Model):
         }
 
 
-
-
-
+class Booking(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.String(50), db.ForeignKey('user.public_id'))
+    listing_id =  db.Column(db.String(50),db.ForeignKey('owner_post.id'))    
+    renter_id =  db.Column(db.String(50),db.ForeignKey('user.public_id'))
+    start_date = db.Column(db.String(50))
+    end_date = db.Column(db.String(50))
+    owner = db.relationship('User', foreign_keys=[owner_id])
+    renter = db.relationship('User', foreign_keys=[renter_id])
+    @property
+    def serialize(self):
+        return {
+            'owner_id'  : self.owner_id,
+            'listing_id': self.listing_id,
+            'renter_id': self.renter_id,
+            'start_date': self.start_date,
+            'end_date'  : self.end_date
+        }
 
 class Df(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -108,7 +122,25 @@ class Df(db.Model):
     reviews_per_month = db.Column(db.String(50))
     calculated_host_listings_count = db.Column(db.String(50))
     availability_365 = db.Column(db.String(50))
-
+    @property
+    def serialize(self):
+        return {
+            'id'  : self.id,
+            'name': self.name,
+            'host_id': self.host_id,
+            'host_name': self.host_name,
+            'neighbourhood_group'  : self.neighbourhood_group,
+            'neighbourhood' : self.neighbourhood,
+            'latitude' : self.latitude,
+            'longitude' : self.longitude,
+            'room_type' : self.room_type,
+            'price' : self.price,
+            'minimum_nights' : self.minimum_nights,
+            'last_review' : self.last_review,
+            'reviews_per_month' : self.reviews_per_month,
+            'calculated_host_listings_count' : self.calculated_host_listings_count,
+            'availability_365' : self.availability_365,
+        }
 
 class Station(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -130,20 +162,3 @@ class Michelin(db.Model):
     price = db.Column(db.String(50))
     url = db.Column(db.String(50))
     star = db.Column(db.String(50))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
