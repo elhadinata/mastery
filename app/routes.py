@@ -114,7 +114,7 @@ register_model = api.model('register', {
 class UserRegister(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Username already exists!')
-    @api.doc(description="User registration.")
+    @api.doc(description="User registration. Please enter your username and password.\ne.g. input: username: 'testuser', password:'123456'\ne.g. output: Successful")
     @api.expect(register_model, validate=True)
     def post(self):
         data = request.get_json()
@@ -137,7 +137,7 @@ class GetUserList(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="Get all the users list, this function requires admin user.")
+    @api.doc(description="Get all the registered users, this function requires admin access.\ne.g.  output: users:[admin:true, name:admin, password:sha256$bcx15R3h$ff1494acab73103112d4ea6ec4a0e16, publid_id:e1132e1b-5508-4083-ac8a-021]")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -169,7 +169,7 @@ class GetOneUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
-    @api.doc(description="Get a single user by their public_id, this function requires admin user.")
+    @api.doc(description="Get a single user according to his/her public_id, this function requires admin access. The input is the user's public id\ne.g. input: public_id: e1132e1b-5508-4083-ac8a-021\ne.g. output: users:[admin:true, name:admin, password:sha256$bcx15R3h$ff1, publid_id:e1132e1b-5508-4083-ac8a-021]")
     def get(self,public_id):
         token = None
         if 'api-token' in request.headers:
@@ -212,7 +212,7 @@ credential_parser.add_argument('password', type=str)
 class TokenGeneration(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Generates a authentication token.")
+    @api.doc(description="Generates a authentication token. Please login using your username and password and get the token.\n e.g. input: username:'testuser', password:'123456'\n e.g. output: token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9")
     @api.expect(credential_parser, validate=True)
     def get(self):
         args = credential_parser.parse_args()
@@ -247,7 +247,7 @@ class SearchRoom(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
     @api.response(406, 'Input format error')
-    @api.doc(description="Search for the room you want, leave empty parameters you don't want to input")
+    @api.doc(description="Search for the room you are interested, you can leave the box empty if you like.\n e.g. input: location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200\ne.g. output: ...")
     @api.expect(search_model)
     def post(self):
         token = None
@@ -367,7 +367,7 @@ price_pred_model = api.model('accomodation', {
 class Details(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="return the details of the room according to the index")
+    @api.doc(description="Return the details of the room according to its id.\ne.g. input: id:1\ne.g. output: record: {availability_365: 353, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, ..., room_type: Private room")
     def get(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -392,7 +392,7 @@ class PricePrediction(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Provide price suggestions according to host's room information.")
+    @api.doc(description="Provide price suggestions according to host's room information.\ne.g. input: name: 'clean rooms', 0location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200\ne.g. output: message: 'suggested price range:', price_range_lower: 65, price_range_upper: 95")
     @api.expect(price_pred_model)
     def put(self):
         token = None
@@ -444,7 +444,7 @@ class PricePrediction(Resource):
 class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Return recommendations according to room index.")
+    @api.doc(description="Return recommendations according to room index.\ne.g. input: room id: 5\n e.g. output: {recommendation: [rooms], single_detail:information of the chosen room}")
     def get(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -506,7 +506,7 @@ class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accommodation listing.")
+    @api.doc(description="Post a new accommodation listing.\ne.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B  Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room\n e.g. output: Successful")
     @api.expect(owner_model)
     def put(self, id):
         token = None
@@ -583,7 +583,7 @@ class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Remove an accommodation.")
+    @api.doc(description="Remove an accommodation.\ne.g. input: room id: 5\n e.g. output: Successful")
     def delete(self):
         token = None
         if 'api-token' in request.headers:
@@ -609,7 +609,7 @@ class SearchStatistics(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Admin priviledges required')
-    @api.doc(description="Get all user search records, this function is available only to admin")
+    @api.doc(description="Get all user search records, this function requires admin access.\ne.g. output: users: {area: b, end_date: 2021-01-01, guest: ""...}")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -649,7 +649,7 @@ class Accomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accommodation listing.")
+    @api.doc(description="Post a new accommodation listing.\ne.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B  Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room\n e.g. output: Successful")
     @api.expect(owner_model)
     def post(self):
         token = None
@@ -723,7 +723,7 @@ class SubscribeUser(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Cannot subscribe yourself')
     @api.response(404, 'User not found')
-    @api.doc(description="Let a user subscribe to another user with public_id")
+    @api.doc(description="Let a user subscribe to another user with public_id.\ne.g. input: public_id: e1132e1b-5508-4083-ac8a-021\ne.g. output: Successful")
     def get(self, public_id):
         token = None
         if 'api-token' in request.headers:
@@ -753,7 +753,7 @@ class UnSubscribeUser(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Cannot unsubscribe yourself')
     @api.response(404, 'User not found')
-    @api.doc(description="Let a user unsubscribe from another user with public_id")
+    @api.doc(description="Let a user unsubscribe from another user with public_id.\ne.g. input: public_id: e1132e1b-5508-4083-ac8a-021\ne.g. output: Successful")
     def get(self, public_id):
         token = None
         if 'api-token' in request.headers:
@@ -830,7 +830,7 @@ def execute():
 class GetBooking(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Get all the bookings of the current user")
+    @api.doc(description="Get all the bookings of the current user.\ne.g. output: bookind=[...]")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -857,7 +857,7 @@ class MakeBooking(Resource):
     @api.response(201, 'Booking Created')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(406, 'Invalid information supplied')
-    @api.doc(description="Make a booking on an accomodation")
+    @api.doc(description="Make a booking on an accomodation.\ne.g. input: start_date: 2019-07-01, end_date: 2019-07-08\ne.g. output: Booking Created")
     @api.expect(book_model, validate=True)
     def post(self, id):
         token = None
@@ -903,7 +903,7 @@ class MakeBooking(Resource):
         return "Booking created"
     @api.response(204, 'Booking Removed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Cancel a booking")
+    @api.doc(description="Cancel a booking using the booking id.\ne.g. input: booking id: 460\ne.g. output: Booking Removed")
     def delete(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -932,7 +932,7 @@ class MakeBooking(Resource):
 class GetOwnerBookings(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Get all of owner's bookings.")
+    @api.doc(description="Get all of owner's bookings.\ne.g. output: booking:[...]")
     def get(self):
         token = None
         if 'api-token' in request.headers:
@@ -957,7 +957,7 @@ class GetOwnerBookings(Resource):
 class CancelOwnerBookings(Resource):
     @api.response(200, 'Booking Cancelled')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Let owner cancel a booking with listing_id.")
+    @api.doc(description="Let owner cancel a booking with listing_id.\ne.g. input: booking id: 460\ne.g. output: Deleted booking of accomodation with listing_id of 460")
     def delete(self, id):
         token = None
         if 'api-token' in request.headers:
