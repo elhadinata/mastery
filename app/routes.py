@@ -330,7 +330,7 @@ class SearchRoom(Resource):
                           price_1=price_1, price_2=price_2)
         db.session.add(new_op)
         db.session.commit()
-        return jsonify(final_res)
+        return make_response(jsonify(final_res), 200)
 
 
 
@@ -381,11 +381,10 @@ class Details(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-
         record = Df.query.filter_by(id=id).first()
         if record is None:
-            return jsonify(record=[])
-        return jsonify(record=record.serialize)
+            return make_response(jsonify(record=[]), 200)
+        return make_response(jsonify(record=record.serialize), 200)
 
 @api.route('/priceadvice')
 class PricePrediction(Resource):
@@ -439,14 +438,6 @@ class PricePrediction(Resource):
         lower = int(result[0])-15
         upper = int(result[0])+15
         return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
-
-
-
-
-       
-
-
-
 
 
 @api.route('/accommodation/<int:id>')
@@ -517,7 +508,7 @@ class UserAccomodation(Resource):
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Post a new accommodation listing.")
     @api.expect(owner_model)
-    def put(self):
+    def put(self, id):
         token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
@@ -535,8 +526,8 @@ class UserAccomodation(Resource):
         name = data['name']
         host_id = current_user.public_id
         host_name = current_user.name
-        neighbourhood_group =data['location']
-        neighbourhood = data['area']
+        neighbourhood_group =data['neighbourhood_group']
+        neighbourhood = data['neighbourhood']
         latitude = data['latitude']
         longitude = data['longitude']
         room_type = data['room_type']
@@ -958,8 +949,8 @@ class GetOwnerBookings(Resource):
         owner_id = request.form.get('owner_id')
         booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
         if len(booking) == 0:
-            return jsonify({ "message" : "No bookings found" })
-        return jsonify(booking=[i.serialize for i in booking])
+            return make_response(jsonify({ "message" : "No bookings found" }), 200)
+        return make_response(jsonify(booking=[i.serialize for i in booking]), 200)
 
 
 @api.route('/owner/bookings/<int:id>')
