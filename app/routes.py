@@ -855,12 +855,18 @@ class GetBooking(Resource):
         return jsonify(booking=[i.serialize for i in booking])
 
 
+book_model = api.model('booking', {
+    'start_date': fields.String,
+    'end_date': fields.String
+})
+
 @api.route('/book/<int:id>')
 class MakeBooking(Resource):
     @api.response(201, 'Booking Created')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(406, 'Invalid information supplied')
     @api.doc(description="Make a booking on an accomodation")
+    @api.expect(book_model, validate=True)
     def post(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -879,8 +885,9 @@ class MakeBooking(Resource):
         if len(owner_post.all()) == 0:
             return make_response('message', 404, {'Accomodation': 'Cannot find accommodation'})
         
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
+        data = request.get_json()
+        start_date = data['start_date']
+        end_date = data['end_date']
         if start_date == "":
             start_date = "1970-01-01"
         if end_date == "":
