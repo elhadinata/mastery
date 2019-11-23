@@ -348,6 +348,7 @@ owner_model = api.model('accomodation', {
     'reviews_per_month': fields.String,
     'calculated_host_listings_count': fields.String,
     'availability_365': fields.String,
+    'price' :fields.String,
 })
 
 price_pred_model = api.model('accomodation', {
@@ -362,7 +363,7 @@ price_pred_model = api.model('accomodation', {
 })
 
 
-@api.route('/accomodation/<int:id>/details')
+@api.route('/accommodation/<int:id>/details')
 class Details(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
@@ -448,7 +449,7 @@ class PricePrediction(Resource):
 
 
 
-@api.route('/accomodation/<int:id>')
+@api.route('/accommodation/<int:id>')
 class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
