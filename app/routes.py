@@ -262,9 +262,9 @@ class SearchRoom(Resource):
                 public_id=data['public_id']).first()
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
-        if not current_user.admin:
-            return make_response('message', 403, {'Username': 'need admin user to perform function'})
-
+        # if not current_user.admin:
+        #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
+        print(current_user)
         data = request.get_json()
         location = data['location']
         area = data['area']
@@ -796,13 +796,39 @@ class UnSubscribeUser(Resource):
         return jsonify({ "message": "Successfully unsubscribed"}), 200
 
 
-@app.route('/makepay')
-def makepay():
-    return render_template('makepay.html')
+@app.route('/makepay/<int:id>', methods=['POST'])
+def makepay(id):
+    print(request)
+    data = request.form.get('name')
+    data1 = request.form.get('neighbourhood_group')
+    data2 = request.form.get('neighbourhood')
+    data3 = request.form.get('room_type')
+    data4 = request.form.get('price')
+    data5 = request.form.get('id')
+    # json_data = {
+    #     "name": f"{str(data)}",
+    #     "neighbourhood_group": f"{str(data1)}",
+    #     "neighbourhood": f"{str(data2)}",
+    #     "room_type": f"{str(data3)}",
+    #     "price": f"{str(data4)}",
+    #     "bid": f"{str(data5)}"
+    # }
+    #print(jsonify(json_data))
+    
+    return render_template('makepay.html', data=data5)
 
 
-@app.route('/payment', methods=['POST'])
-def payment():
+@app.route('/payment/<int:id>', methods=['POST'])
+def payment(id):
+    try:
+        booking = Booking.query.filter_by(listing_id=id).all()[-1]
+        listing = Df.query.filter_by(id=id).first()
+        time_s = time.mktime(time.strptime(booking.start_date, "%Y-%m-%d"))
+        time_e = time.mktime(time.strptime(booking.end_date, "%Y-%m-%d"))
+        duration = int((time_e - time_s) / 86400)
+        subtotal = duration * listing.price
+    except:
+        return make_response('Message',406, {'error':'Invalid booking'})
     payment = paypalrestsdk.Payment({
         "intent": "sale",
         "payer": {
@@ -813,13 +839,13 @@ def payment():
         "transactions": [{
             "item_list": {
                 "items": [{
-                    "name": "testitem",
+                    "name": f"{str(listing.name)}",
                     "sku": "12345",
-                    "price": "20.00",
+                    "price": f"{str(subtotal)}",
                     "currency": "USD",
                     "quantity": 1}]},
             "amount": {
-                "total": "20.00",
+                "total": f"{str(subtotal)}",
                 "currency": "USD"},
             "description": "This is the payment transaction description."}]})
 

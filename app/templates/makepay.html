@@ -11,7 +11,10 @@
 
 
 <script>
-    var CREATE_PAYMENT_URL  = 'http://127.0.0.1:5000/payment';
+    let d = {{ data }};
+    console.log(d);
+
+    var CREATE_PAYMENT_URL  = 'http://127.0.0.1:5000/payment/'+d;
     var EXECUTE_PAYMENT_URL = 'http://127.0.0.1:5000/execute';
     paypal.Button.render({
         env: 'sandbox', // Or 'sandbox'
