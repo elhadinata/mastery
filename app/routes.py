@@ -262,10 +262,11 @@ class SearchRoom(Resource):
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'})
-        if not current_user.admin:
-            return make_response('message: need admin user access', 403, {'Username': 'need admin user to perform function'})
 
+            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+        # if not current_user.admin:
+        #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
+       
         data = request.get_json()
         location = data['location']
         area = data['area']
@@ -420,16 +421,14 @@ class PricePrediction(Resource):
         try:
             query = {}
             query['name'] = data['name']
-            query['neighbourhood_group'] =data['location']
-            query['neighbourhood'] = data['area']
+            query['neighbourhood_group'] =data['neighbourhood_group']
+            query['neighbourhood'] = data['neighbourhood']
             query['latitude'] = float(data['latitude'])
             query['longitude'] = float(data['longitude'])
             query['room_type'] = data['room_type']
             query['minimum_nights'] = int(data['minimum_nights'])
             query['availability_365'] = int(data['availability_365'])
             
-           
-
             ml_model = ML_model()
             ml_model.prep_price_preds(post_pandas)
             if data['room_type'] =="":
@@ -444,7 +443,7 @@ class PricePrediction(Resource):
             #print(result)
             lower = int(result[0])-15
             upper = int(result[0])+15 
-            return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
+            return make_response(jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper }), 200)
 
         except:
             return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
@@ -548,7 +547,7 @@ class UserAccomodation(Resource):
         st_listing = st_lng_lower.T.to_dict().values()
         
         print(list(st_listing))
-        return jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)})
+        return make_response(jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)}), 200)
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
@@ -624,7 +623,7 @@ class UserAccomodation(Resource):
         global mi_pandas, st_pandas, post_pandas
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
         
-        return { "message": "Successfully Updated" }, 200
+        return make_response({ "message": "Successfully Updated" }, 200)
 
 
     @api.response(200, 'Successful')
@@ -823,13 +822,23 @@ class UnSubscribeUser(Resource):
         return jsonify({ "message": "Successfully unsubscribed"}), 200
 
 
-@app.route('/makepay')
-def makepay():
-    return render_template('makepay.html')
+@app.route('/makepay/<int:id>', methods=['POST'])
+def makepay(id):
+    id = request.form.get('id')
+    return render_template('makepay.html', data=id)
 
 
-@app.route('/payment', methods=['POST'])
-def payment():
+@app.route('/payment/<int:id>', methods=['POST'])
+def payment(id):
+    try:
+        booking = Booking.query.filter_by(listing_id=id).all()[-1]
+        listing = Df.query.filter_by(id=id).first()
+        time_s = time.mktime(time.strptime(booking.start_date, "%Y-%m-%d"))
+        time_e = time.mktime(time.strptime(booking.end_date, "%Y-%m-%d"))
+        duration = int((time_e - time_s) / 86400)
+        subtotal = duration * listing.price
+    except:
+        return make_response('Message',406, {'error':'Invalid booking'})
     payment = paypalrestsdk.Payment({
         "intent": "sale",
         "payer": {
@@ -840,13 +849,13 @@ def payment():
         "transactions": [{
             "item_list": {
                 "items": [{
-                    "name": "testitem",
+                    "name": f"{str(listing.name)}",
                     "sku": "12345",
-                    "price": "20.00",
+                    "price": f"{str(subtotal)}",
                     "currency": "USD",
                     "quantity": 1}]},
             "amount": {
-                "total": "20.00",
+                "total": f"{str(subtotal)}",
                 "currency": "USD"},
             "description": "This is the payment transaction description."}]})
 
