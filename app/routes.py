@@ -415,8 +415,8 @@ owner_model = api.model('accomodation', {
 
 price_pred_model = api.model('price', {
     'name': fields.String,
-    'location': fields.String,
-    'area': fields.String,
+    'neighbourhood_group': fields.String,
+    'neighbourhood': fields.String,
     'latitude': fields.String,
     'longitude': fields.String,
     'room_type': fields.String,
