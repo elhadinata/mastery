@@ -451,7 +451,7 @@ class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(404, 'Room ID not found')
-    @api.doc(description="Return recommendations according to room index.\ne.g. input: room id: 5\n e.g. output: {recommendation: [rooms], single_detail:information of the chosen room}")
+    @api.doc(description="Return recommendations, nearby trainstations and nearby Michelin restaurants according to the room id.\ne.g. input: room id: 5\n e.g. output: {mi_listing: [nearby Michelin restaurants], recommendation: [rooms], single_detail:information of the chosen room, st_listing:[nearby train stations]}")
     def get(self, id):
         token = None
         if 'api-token' in request.headers:
@@ -514,14 +514,37 @@ class UserAccomodation(Resource):
         
 
         #mi_pandas, st_pandas, post_pandas
-        print(mi_pandas.columns)
+        #print(mi_pandas.columns)
         
-        lat_upper = float(room_detail['latitude'])+0.01
-        lat_lower = float(room_detail['latitude'])-0.01
+        mi_lat_upper = float(room_detail[0]['latitude'])+0.04
+        mi_lat_lower = float(room_detail[0]['latitude'])-0.04
+        mi_lng_upper = float(room_detail[0]['longitude'])+0.04
+        mi_lng_lower = float(room_detail[0]['longitude'])-0.04
         
-        #lng_upper = 
+        mi_pandas['latitude'] = pd.to_numeric(mi_pandas['latitude'])
+        mi_pandas['longitude'] = pd.to_numeric(mi_pandas['longitude'])
+        mi_lat_upper = mi_pandas[mi_pandas['latitude']<mi_lat_upper].copy()
+        mi_lat_lower = mi_lat_upper[mi_lat_upper['latitude']>mi_lat_lower].copy()
+        mi_lng_upper = mi_lat_lower[mi_lat_lower['longitude']<mi_lng_upper].copy()
+        mi_lng_lower = mi_lng_upper[mi_lng_upper['longitude']>mi_lng_lower].copy()
         
-        return jsonify({'single_detail':room_detail,'recommendation': output})
+        mi_listing = mi_lng_lower.T.to_dict().values()
+        
+        st_lat_upper = float(room_detail[0]['latitude'])+0.01
+        st_lat_lower = float(room_detail[0]['latitude'])-0.01
+        st_lng_upper = float(room_detail[0]['longitude'])+0.01
+        st_lng_lower = float(room_detail[0]['longitude'])-0.01
+        st_pandas['latitude'] = pd.to_numeric(st_pandas['latitude'])
+        st_pandas['longitude'] = pd.to_numeric(st_pandas['longitude'])
+        st_lat_upper = st_pandas[st_pandas['latitude']<st_lat_upper].copy()
+        st_lat_lower = st_lat_upper[st_lat_upper['latitude']>st_lat_lower].copy()
+        st_lng_upper = st_lat_lower[st_lat_lower['longitude']<st_lng_upper].copy()
+        st_lng_lower = st_lng_upper[st_lng_upper['longitude']>st_lng_lower].copy()
+        
+        st_listing = st_lng_lower.T.to_dict().values()
+        
+        print(list(st_listing))
+        return jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)})
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
