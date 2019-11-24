@@ -114,7 +114,7 @@ register_model = api.model('register', {
 class UserRegister(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Username already exists!')
-    @api.doc(description="User registration. Please enter your username and password.\ne.g. input: username: 'testuser', password:'123456'\ne.g. output: Successful")
+    @api.doc(description="User registration. Please enter your username and password.\ne.g. input: username: 'testuser', password:'123456'\ne.g. output: message: User successfully registered")
     @api.expect(register_model, validate=True)
     def post(self):
         data = request.get_json()
@@ -299,7 +299,7 @@ class SearchRoom(Resource):
                         (Df.price <= int(price_2))
                             ).all()
         except:
-            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:private room '})
+            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room '})
 
         final_res = []
 
@@ -392,7 +392,8 @@ class PricePrediction(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Provide price suggestions according to host's room information.\ne.g. input: name: 'clean rooms', 0location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200\ne.g. output: message: 'suggested price range:', price_range_lower: 65, price_range_upper: 95")
+    @api.response(406, 'Input format error')
+    @api.doc(description="Provide price suggestions according to host's room information. You can leave the geo-location empty if you don't know. Blank input will be replaced by default values.\ne.g. input: name: 'clean rooms', location:'Central Region', area:'Queenstown', latitude:'', longitude:'',type_room:'Private room', minimum_nights:5, availability_365:365 \ne.g. output: message: 'suggested price range:', price_range_lower: 65, price_range_upper: 95")
     @api.expect(price_pred_model)
     def put(self):
         token = None
@@ -410,35 +411,39 @@ class PricePrediction(Resource):
   
         data = request.get_json()
   
-
-        query = {}
-        query['name'] = data['name']
-        query['neighbourhood_group'] =data['location']
-        query['neighbourhood'] = data['area']
-        query['latitude'] = data['latitude']
-        query['longitude'] = data['longitude']
-        query['room_type'] = data['room_type']
-        query['minimum_nights'] = data['minimum_nights']
-        query['availability_365'] = data['availability_365']
-        
        
+        try:
+            query = {}
+            query['name'] = data['name']
+            query['neighbourhood_group'] =data['location']
+            query['neighbourhood'] = data['area']
+            query['latitude'] = float(data['latitude'])
+            query['longitude'] = float(data['longitude'])
+            query['room_type'] = data['room_type']
+            query['minimum_nights'] = int(data['minimum_nights'])
+            query['availability_365'] = int(data['availability_365'])
+            
+           
 
-        ml_model = ML_model()
-        ml_model.prep_price_preds(post_pandas)
-        if data['room_type'] =="":
-            rt = 0
-        else:
-            rt = ml_model.rt_dict[data['room_type']]
-        ml_model.build_price_model(rt)
-        
-        
-        
-        result  = ml_model.price_prediction(query)
-        #print(result)
-        lower = int(result[0])-15
-        upper = int(result[0])+15
-        return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
+            ml_model = ML_model()
+            ml_model.prep_price_preds(post_pandas)
+            if data['room_type'] =="":
+                rt = 0
+            else:
+                rt = ml_model.rt_dict[data['room_type']]
+            ml_model.build_price_model(rt)
+            
+            
+            
+            result  = ml_model.price_prediction(query)
+            #print(result)
+            lower = int(result[0])-15
+            upper = int(result[0])+15 
+            return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
 
+        except:
+            return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
+       
 
 @api.route('/accommodation/<int:id>')
 class UserAccomodation(Resource):
@@ -584,7 +589,7 @@ class UserAccomodation(Resource):
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Remove an accommodation.\ne.g. input: room id: 5\n e.g. output: Successful")
-    def delete(self):
+    def delete(self,id):
         token = None
         if 'api-token' in request.headers:
             token = request.headers['api-token']
