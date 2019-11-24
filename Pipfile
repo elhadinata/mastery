@@ -14,8 +14,6 @@ pyjwt = "*"
 paypalrestsdk = "*"
 pandas = "*"
 sklearn = "*"
-scipy = "*"
-scipy-sparse = "*"
 
 [requires]
 python_version = "3.7"

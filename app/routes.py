@@ -113,14 +113,15 @@ register_model = api.model('register', {
 @api.route('/user_register')
 class UserRegister(Resource):
     @api.response(200, 'Successful')
-    @api.response(401, 'Username already exists!')
+    @api.response(401, 'Invalid username or password!')
     @api.doc(description="User registration. Please enter your username and password.\ne.g. input: username: 'testuser', password:'123456'\ne.g. output: message: User successfully registered")
     @api.expect(register_model, validate=True)
     def post(self):
         data = request.get_json()
         password = data['password']
         name = data['username']
-        print(name+' '+password)
+        if len(data) < 4 or len(password) < 4:
+            return make_response('message', 401, {'Username': 'invalid username or password"'})
         user = User.query.filter_by(name = name).first()
         if user:
             return make_response('Username already exists!', 401, {'Username': 'username already exists!"'})
@@ -168,7 +169,7 @@ class GetUserList(Resource):
 class GetOneUser(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
-    @api.response(403, 'Forbidden : Need ADMIN')
+    @api.response(403, 'Forbidden : Invalid ID')
     @api.doc(description="Get a single user according to his/her public_id, this function requires admin access. The input is the user's public id\ne.g. input: public_id: e1132e1b-5508-4083-ac8a-021\ne.g. output: users:[admin:true, name:admin, password:sha256$bcx15R3h$ff1, publid_id:e1132e1b-5508-4083-ac8a-021]")
     def get(self,public_id):
         token = None
@@ -184,11 +185,11 @@ class GetOneUser(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         if not current_user.admin:
-            return make_response('message', 403, {'Username': 'need admin user to perform function'})
+            return make_response('message', 403, {'Username': 'Invalid ID'})
 
         user = User.query.filter_by(public_id=public_id).first()
         if not user:
-            return make_response('message', 403, {'Username': 'need admin user to perform function'})
+            return make_response('message', 403, {'Username': 'Invalid ID'})
         user_data = {}
         user_data['public_id'] = user.public_id
         user_data['name'] = user.name
@@ -449,6 +450,7 @@ class PricePrediction(Resource):
 class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
+    @api.response(404, 'Room ID not found')
     @api.doc(description="Return recommendations according to room index.\ne.g. input: room id: 5\n e.g. output: {recommendation: [rooms], single_detail:information of the chosen room}")
     def get(self, id):
         token = None
@@ -465,8 +467,11 @@ class UserAccomodation(Resource):
 
         ml_model = ML_model()
         ml_model.prep_price_preds(post_pandas)
-        row = ml_model.data.loc[id-1]
-        rt = row["room_type"]
+        try:
+            row = ml_model.data.loc[id-1]
+            rt = row["room_type"]
+        except:
+            return make_response('message', 404, {'ID': 'Room ID not found'})
         ml_model.prep_knn_preds(rt)
         ml_model.build_knn_model()
         
