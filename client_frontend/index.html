@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Mastery</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        a {
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <!-- Our Javascript File -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="index.js"></script>
+
+</head>
+<body>
+
+<ul>
+    <li>
+        <h1>Login</h1>
+        <div class="content">
+            <form class="ui form" id="login-form">
+                <div class="field">
+                    <label>Username</label>
+                    <input id="uname-login" type="text" name="name" placeholder="Username">
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input id="pass-login" type="password" name="password" placeholder="Password">
+                </div>
+                <button class="ui button submit" type="submit">Submit</button>
+                <div class="ui error message"></div>
+            </form>
+        </div>
+    </li>
+    <li>
+        <h1>Register</h1>
+        <div class="content">
+            <form class="ui form" action="/user_register" id="register-form">
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" id="uname-register" name="name" placeholder="Username">
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" id="pass-register" name="password" placeholder="Password">
+                </div>
+                <button class="ui button submit" type="submit">Submit</button>
+            </form>
+        </div>
+    </li>
+
+    <li>
+        <h1>Search</h1>
+        <div class="text container" id="search">
+            Search for Accomodation
+            <form class="ui form" id="search-form" action="/search" method="post">
+                <div class="field">
+                    <label>Location</label>
+                    <div class="field">
+                        <input type="text" name="location" placeholder="Location">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Area</label>
+                    <div class="field">
+                        <input type="text" name="area" placeholder="Area">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Type of Room</label>
+                    <select class="ui dropdown" name="type_room">
+                        <option value="">Select</option>
+                        <option value="Private room">Private room</option>
+                        <option value="Entire home/apt">Entire home/apt</option>
+                        <option value="Shared room">Shared room</option>
+                    </select>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Start</label>
+                        <div class="field">
+                            <input id="start_date" type="date" name="start_date" placeholder="Area">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>End</label>
+                        <div class="field">
+                            <input id="end_date" type="date" name="end_date" placeholder="Area">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Guest</label>
+                    <div class="field">
+                        <input type="text" name="guest" placeholder="Number of Guest">
+                    </div>
+                </div>
+                <div class="two fields">
+                    <label>Price Range</label>
+                    <div class="field">
+                        <div class="field">
+                            <input type="text" name="price_1" placeholder="From">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="field">
+                            <input type="text" name="price_2" placeholder="To">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Station</label>
+                    <div class="field">
+                        <input type="text" name="station" placeholder="Nearby Station">
+                    </div>
+                </div>
+                <button class="ui primary button" type="submit">Submit</button>
+                <div class="ui error message"></div>
+            </form>
+        </div>
+    </li>
+    <li>
+        <h1>Search Result</h1>
+        <div class="text container">
+            <ul id="search-result">
+
+            </ul>
+        </div>
+    </li>
+    <li>
+        <h1>Details</h1>
+        <div class="text container">
+            <ul id="search-result-details">
+
+            </ul>
+        </div>
+
+        <h1>Similar to it</h1>
+        <div class="text container">
+            <ul id="search-result-rec">
+
+            </ul>
+        </div>
+    </li>
+
+    <li>
+        <h1>Bookings</h1>
+        <div class="text container">
+            <button type="button" id="update-booking">Update List of Booking</button>
+            <ul id="bookings">
+
+            </ul>
+        </div>
+
+    </li>
+
+    
+
+    <li>
+        <h1>Owner Bookings</h1>
+        <div class="text container">
+            <ul id="owner-bookings">
+
+            </ul>
+            <button type="button" id="btn-owner">Get the List of Booking on my accommodation</button>
+
+        </div>
+
+    </li>
+
+    <li>
+        
+        <h1>Accomodation</h1>
+        <ul>
+            <li>
+                <h2>Post an accomodation</h2>
+                <form class="ui form" id="acc-form" method="post">
+                    <div class="field">
+                        <label>Name</label>
+                        <div class="field">
+                            <input type="text" name="name" placeholder="Name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>neighbourhood_group</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood_group" placeholder="neighbourhood_group">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>neighbourhood</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood" placeholder="neighbourhood">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>latitude</label>
+                        <div class="field">
+                            <input type="text" name="latitude" placeholder="latitude">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>longitude</label>
+                        <div class="field">
+                            <input type="text" name="longitude" placeholder="longitude">
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Type of Room</label>
+                        <select class="ui dropdown" name="room_type">
+                            <option value="">Select</option>
+                            <option value="Private room">Private room</option>
+                            <option value="Entire home/apt">Entire home/apt</option>
+                            <option value="Shared room">Shared room</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Minimum Nights</label>
+                        <div class="field">
+                            <input type="text" name="minimum_nights" placeholder="minimum_nights">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Number Reviews</label>
+                        <div class="field">
+                            <input type="text" name="number_of_reviews" placeholder="number_of_reviews">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Last Review</label>
+                        <div class="field">
+                            <input type="text" name="last_review" placeholder="last_review">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Reviews per Month</label>
+                        <div class="field">
+                            <input type="text" name="reviews_per_month" placeholder="reviews_per_month">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Calculated Host Listing Count</label>
+                        <div class="field">
+                            <input type="text" name="calculated_host_listings_count" placeholder="calculated_host_listings_count">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Availability 365</label>
+                        <div class="field">
+                            <input type="text" name="availability_365" placeholder="availability_365">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Price</label>
+                        <div class="field">
+                            <input type="text" name="price" placeholder="price">
+                        </div>
+                    </div>
+                    <button class="ui primary button" type="submit">Submit</button>
+                </form>
+            </li>
+            
+
+            <li>
+                <h2>Edit an accomodation</h2>
+                <form class="ui form" id="acc-edit-form" method="post">
+                    <div class="field">
+                        <label>Listing</label>
+                        <div class="field">
+                            <input type="text" name="id" placeholder="Listing id">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Name</label>
+                        <div class="field">
+                            <input type="text" name="name" placeholder="Name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>neighbourhood_group</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood_group" placeholder="neighbourhood_group">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>neighbourhood</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood" placeholder="neighbourhood">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>latitude</label>
+                        <div class="field">
+                            <input type="text" name="latitude" placeholder="latitude">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>longitude</label>
+                        <div class="field">
+                            <input type="text" name="longitude" placeholder="longitude">
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Type of Room</label>
+                        <select class="ui dropdown" name="room_type">
+                            <option value="">Select</option>
+                            <option value="Private room">Private room</option>
+                            <option value="Entire home/apt">Entire home/apt</option>
+                            <option value="Shared room">Shared room</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Minimum Nights</label>
+                        <div class="field">
+                            <input type="text" name="minimum_nights" placeholder="minimum_nights">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Number Reviews</label>
+                        <div class="field">
+                            <input type="text" name="number_of_reviews" placeholder="number_of_reviews">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Last Review</label>
+                        <div class="field">
+                            <input type="text" name="last_review" placeholder="last_review">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Reviews per Month</label>
+                        <div class="field">
+                            <input type="text" name="reviews_per_month" placeholder="reviews_per_month">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Calculated Host Listing Count</label>
+                        <div class="field">
+                            <input type="text" name="calculated_host_listings_count" placeholder="calculated_host_listings_count">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Availability 365</label>
+                        <div class="field">
+                            <input type="text" name="availability_365" placeholder="availability_365">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Price</label>
+                        <div class="field">
+                            <input type="text" name="price" placeholder="price">
+                        </div>
+                    </div>
+                    <button class="ui primary button" type="submit">Submit</button>
+                </form>
+            </li>
+            <li>
+                <h2>Price recommendation</h2>
+                <form class="ui form" id="price-form" method="post">
+                    <div class="field">
+                        <label>Name</label>
+                        <div class="field">
+                            <input type="text" name="name" placeholder="Name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Neighbourhood Group</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood_group" placeholder="neighbourhood_group">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Neighbourhood</label>
+                        <div class="field">
+                            <input type="text" name="neighbourhood" placeholder="neighbourhood">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>latitude</label>
+                        <div class="field">
+                            <input type="text" name="latitude" placeholder="latitude">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>longitude</label>
+                        <div class="field">
+                            <input type="text" name="longitude" placeholder="longitude">
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Type of Room</label>
+                        <select class="ui dropdown" name="room_type">
+                            <option value="">Select</option>
+                            <option value="Private room">Private room</option>
+                            <option value="Entire home/apt">Entire home/apt</option>
+                            <option value="Shared room">Shared room</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Minimum Nights</label>
+                        <div class="field">
+                            <input type="text" name="minimum_nights" placeholder="minimum_nights">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Availability 365</label>
+                        <div class="field">
+                            <input type="text" name="availability_365" placeholder="availability_365">
+                        </div>
+                    </div>
+                    <button class="ui primary button" type="submit">Submit</button>
+                </form>
+                <div id="price-rec"></div>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <h1>Subscription</h1>
+        <h2>Subscribe to user with public_id</h2>
+        <form class="ui form" id="subs-form" method="post">
+            <div class="field">
+                <label>public_id</label>
+                <div class="field">
+                    <input type="text" name="public_id" placeholder="public_id">
+                </div>
+            </div>
+            <button class="ui primary button" type="submit">Submit</button>
+        </form>
+
+        <h2>Unsubscribe from user with public_id</h2>
+        <form class="ui form" id="unsubs-form" method="post">
+            <div class="field">
+                <label>public_id</label>
+                <div class="field">
+                    <input type="text" name="public_id" placeholder="public_id">
+                </div>
+            </div>
+            <button class="ui primary button" type="submit">Submit</button>
+        </form>
+    </li>
+
+    <li>
+        <h1>Users List</h1>
+        <div class="text container">
+            <button type="button" id="btn-users">Get User List</button>
+            <ul id="users-list">
+
+            </ul>
+        </div>
+
+    </li>
+
+    <li>
+        <h1>Search Statistics</h1>
+        <div class="text container">
+            <button type="button" id="btn-stats">Get Search Statistics</button>
+            <ul id="statistics">
+
+            </ul>
+        </div>
+
+    </li>
+
+</ul>
+
+
+</body>

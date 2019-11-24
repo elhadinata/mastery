@@ -1,0 +1,61 @@
+method,API,description
+POST,/accommodation,"Post a new accommodation listing.
+e.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room
+e.g. output: Successful"
+GET,/accommodation/{id},"Return recommendations, nearby trainstations and nearby Michelin restaurants according to the room id.
+e.g. input: room id: 5
+e.g. output: {mi_listing: [nearby Michelin restaurants], recommendation: [rooms], single_detail:information of the chosen room, st_listing:[nearby train stations]}"
+PUT,/accommodation/{id},"Modify an accommodation listing.
+e.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room
+e.g. output: Successful"
+DELETE,/accommodation/{id},"Remove an accommodation.
+e.g. input: room id: 5
+e.g. output: Successful"
+GET,/accommodation/{id}/details,"Return the details of the room according to its id.
+e.g. input: id:1
+e.g. output: record: {availability_365: 353, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, …, room_type: Private room"
+GET,/book,"Get all the bookings of the current user.
+e.g. output: bookind=[…]"
+POST,/book/{id},"
+/book/{id}
+
+Make a booking on an accomodation.
+e.g. input: start_date: 2019-07-01, end_date: 2019-07-08
+e.g. output: Booking Created"
+DELETE,/book/{id},"Cancel a booking using the booking id.
+e.g. input: booking id: 460
+e.g. output: Booking Removed"
+GET,/owner/bookings,"Get all of owner’s bookings.
+e.g. output: booking:[…]"
+DELETE,/owner/bookings/{id},"Let owner cancel a booking with listing_id.
+e.g. input: booking id: 460
+e.g. output: Deleted booking of accomodation with listing_id of 460
+
+"
+PUT,/priceadvice,"Provide price suggestions according to host’s room information. You can leave the geo-location empty if you don’t know. Blank input will be replaced by default values.
+e.g. input: name: 'clean rooms’, location:’Central Region’, area:’Queenstown’, latitude:’’, longitude:’’,type_room:’Private room’, minimum_nights:5, availability_365:365
+e.g. output: message: 'suggested price range:’, price_range_lower: 65, price_range_upper: 95"
+POST,/search,"Search for the room you are interested, you can leave the box empty if you like. If user add station field, the backend will return the room which have that station name nearby
+e.g. input: location:’Central Region’, area:’Queenstown’, type_room:’Private room’, start_Date:’’, end_date:’’,price_1:10, price_2:200,station:’’
+e.g. output: …"
+GET,/statistics,"Get all user search records, this function requires admin access.
+e.g. output: users: {area: b, end_date: 2021-01-01, guest: …}"
+GET,/subscribe/{public_id},"Let a user subscribe to another user with public_id.
+e.g. input: public_id: e1132e1b-5508-4083-ac8a-021
+e.g. output: Successful
+
+"
+GET,/token,"Log in with the generated authentication token. Please login using your username and password and get the token.
+e.g. input: username:’testuser’, password:’123456’
+e.g. output: token:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+GET,/unsubscribe/{public_id},"Let a user unsubscribe from another user with public_id.
+e.g. input: public_id: e1132e1b-5508-4083-ac8a-021
+e.g. output: Successful"
+GET,/user/{public_id},"Get a single user according to his/her public_id, this function requires admin access. The input is the user’s public id
+e.g. input: public_id: e1132e1b-5508-4083-ac8a-021
+e.g. output: users:[admin:true, name:admin, password:sha256$bcx15R3h$ff1, publid_id:e1132e1b-5508-4083-ac8a-021]"
+POST,/user_register,"User registration. Please enter your username and password.
+e.g. input: username: ‘testuser’, password:’123456’
+e.g. output: message: User successfully registered"
+GET,/user_list,"Get all the registered users, this function requires admin access.
+e.g. output: users:[admin:true, name:admin, password:sha256$bcx15R3h$ff1494acab73103112d4ea6ec4a0e16, publid_id:e1132e1b-5508-4083-ac8a-021]"
