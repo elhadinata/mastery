@@ -821,24 +821,8 @@ class UnSubscribeUser(Resource):
 
 @app.route('/makepay/<int:id>', methods=['POST'])
 def makepay(id):
-    print(request)
-    data = request.form.get('name')
-    data1 = request.form.get('neighbourhood_group')
-    data2 = request.form.get('neighbourhood')
-    data3 = request.form.get('room_type')
-    data4 = request.form.get('price')
-    data5 = request.form.get('id')
-    # json_data = {
-    #     "name": f"{str(data)}",
-    #     "neighbourhood_group": f"{str(data1)}",
-    #     "neighbourhood": f"{str(data2)}",
-    #     "room_type": f"{str(data3)}",
-    #     "price": f"{str(data4)}",
-    #     "bid": f"{str(data5)}"
-    # }
-    #print(jsonify(json_data))
-    
-    return render_template('makepay.html', data=data5)
+    id = request.form.get('id')
+    return render_template('makepay.html', data=id)
 
 
 @app.route('/payment/<int:id>', methods=['POST'])
