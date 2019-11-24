@@ -94,13 +94,13 @@ def token_required(f):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'}), 401
+            return make_response('message: Token is missing!', 401, {'Username': 'Token is missing!'}), 401
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'}), 401
+            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'}), 401
         return f(current_user, *args, **kwargs)
     return decorated
 
@@ -113,7 +113,7 @@ register_model = api.model('register', {
 @api.route('/user_register')
 class UserRegister(Resource):
     @api.response(200, 'Successful')
-    @api.response(401, 'Invalid username or password!')
+    @api.response(406, 'Invalid username or password!')
     @api.doc(description="User registration. Please enter your username and password.\ne.g. input: username: 'testuser', password:'123456'\ne.g. output: message: User successfully registered")
     @api.expect(register_model, validate=True)
     def post(self):
@@ -121,16 +121,16 @@ class UserRegister(Resource):
         password = data['password']
         name = data['username']
         if len(name) < 4 or len(password) < 4:
-            return make_response('message', 401, {'Username': 'invalid username or password"'})
+            return make_response('message: invalid username or password', 406, {'Username': 'invalid username or password"'})
         user = User.query.filter_by(name = name).first()
         if user:
-            return make_response('Username already exists!', 401, {'Username': 'username already exists!"'})
+            return make_response('message: Username already exists!', 406, {'Username': 'username already exists!"'})
         
         hashed_password = generate_password_hash(password, method='sha256')
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
         db.session.commit()
-        return make_response(jsonify({ "message": "User successfully registered" }), 200)
+        return make_response(jsonify({ "message: User successfully registered": "User successfully registered" }), 200)
 
 
 @api.route('/userlist')
@@ -144,15 +144,15 @@ class GetUserList(Resource):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})
+            return make_response('message: Token is missing!', 401, {'Username': 'Token is missing!'})
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'})
         if not current_user.admin:
-            make_response('message', 403, {'Username': 'need admin user'})
+            make_response('message: need admin user access', 403, {'Username': 'need admin user access'})
         users = User.query.all()
         output = []
         for user in users:
@@ -176,20 +176,20 @@ class GetOneUser(Resource):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})
+            return make_response('message: Token is missing!', 401, {'Username': 'Token is missing!'})
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
            
         except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'})
         if not current_user.admin:
-            return make_response('message', 403, {'Username': 'Invalid ID'})
+            return make_response('message: Invalid ID', 403, {'Username': 'Invalid ID'})
 
         user = User.query.filter_by(public_id=public_id).first()
         if not user:
-            return make_response('message', 403, {'Username': 'Invalid ID'})
+            return make_response('message: Invalid ID', 403, {'Username': 'Invalid ID'})
         user_data = {}
         user_data['public_id'] = user.public_id
         user_data['name'] = user.name
@@ -247,6 +247,7 @@ class SearchRoom(Resource):
     @api.response(200, 'Successful')
     @api.response(401, 'Token is missing or Invalid')
     @api.response(403, 'Forbidden : Need ADMIN')
+    @api.response(404, 'Room not found')
     @api.response(406, 'Input format error')
     @api.doc(description="Search for the room you are interested, you can leave the box empty if you like.\n e.g. input: location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200\ne.g. output: ...")
     @api.expect(search_model)
@@ -255,16 +256,21 @@ class SearchRoom(Resource):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+            return make_response('message:Token is missing!', 401, {'Username': 'Token is missing!'})# change to abort
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
+
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         # if not current_user.admin:
         #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
+<<<<<<< HEAD
         #print(current_user)
+=======
+       
+>>>>>>> f1ec0a31ec57dcaec612614e272ec5240d561d80
         data = request.get_json()
         location = data['location']
         area = data['area']
@@ -284,7 +290,8 @@ class SearchRoom(Resource):
         if end_date == "":
             end_date = "2021-01-01"
         try:
-
+           # if not guest.is_integer():
+           #     return make_response('Format error:format is Date: year-month-day, Price: integer, Room type:Private room, guest number should be integer', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room, guest number should be integer '})
             time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
             time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
 
@@ -301,11 +308,15 @@ class SearchRoom(Resource):
                         (Df.price >= int(price_1)),
                         (Df.price <= int(price_2))
                             ).all()
+
             sss = Station.query.filter(Station.station_name.ilike("%" + station + "%")).all()
             
 
+            if len(qq) == 0:
+                return make_response('Not found', 404, {'value': 'cannot find any room according to hte input'})
+
         except:
-            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room '})
+            return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room, guest number should be integer '})
 
         final_res = []
         temp_counter = 0
@@ -428,13 +439,13 @@ class Details(Resource):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+            return make_response('message: Token is missing!', 401, {'Username': 'Token is missing!'})# change to abort
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'})
 
         record = Df.query.filter_by(id=id).first()
         if record is None:
@@ -455,13 +466,13 @@ class PricePrediction(Resource):
         if 'api-token' in request.headers:
             token = request.headers['api-token']
         if not token:
-            return make_response('message', 401, {'Username': 'Token is missing!'})# change to abort
+            return make_response('message: Token is missing!', 401, {'Username': 'Token is missing!'})# change to abort
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-            return make_response('message', 401, {'Username': 'Token is Invalid!'})
+            return make_response('message: Token is Invalid!', 401, {'Username': 'Token is Invalid!'})
 
   
         data = request.get_json()
@@ -470,16 +481,14 @@ class PricePrediction(Resource):
         try:
             query = {}
             query['name'] = data['name']
-            query['neighbourhood_group'] =data['location']
-            query['neighbourhood'] = data['area']
+            query['neighbourhood_group'] =data['neighbourhood_group']
+            query['neighbourhood'] = data['neighbourhood']
             query['latitude'] = float(data['latitude'])
             query['longitude'] = float(data['longitude'])
             query['room_type'] = data['room_type']
             query['minimum_nights'] = int(data['minimum_nights'])
             query['availability_365'] = int(data['availability_365'])
             
-           
-
             ml_model = ML_model()
             ml_model.prep_price_preds(post_pandas)
             if data['room_type'] =="":
@@ -494,7 +503,7 @@ class PricePrediction(Resource):
             #print(result)
             lower = int(result[0])-15
             upper = int(result[0])+15 
-            return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
+            return make_response(jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper }), 200)
 
         except:
             return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
@@ -598,7 +607,7 @@ class UserAccomodation(Resource):
         st_listing = st_lng_lower.T.to_dict().values()
         
         print(list(st_listing))
-        return jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)})
+        return make_response(jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)}), 200)
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
@@ -674,7 +683,7 @@ class UserAccomodation(Resource):
         global mi_pandas, st_pandas, post_pandas
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
         
-        return { "message": "Successfully Updated" }, 200
+        return make_response({ "message": "Successfully Updated" }, 200)
 
 
     @api.response(200, 'Successful')
@@ -720,7 +729,7 @@ class SearchStatistics(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-        if not current_user.admin:
+        if not curre10nt_user.admin:
             return make_response('message', 403, {'Username': 'Admin priviledges required to perform action'})
         ops = Oprecord.query.all()
         output = []
