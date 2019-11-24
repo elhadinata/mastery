@@ -120,7 +120,7 @@ class UserRegister(Resource):
         data = request.get_json()
         password = data['password']
         name = data['username']
-        if len(data) < 4 or len(password) < 4:
+        if len(name) < 4 or len(password) < 4:
             return make_response('message', 401, {'Username': 'invalid username or password"'})
         user = User.query.filter_by(name = name).first()
         if user:
@@ -511,6 +511,16 @@ class UserAccomodation(Resource):
                 count += 1
             else:
                 output.append(ele_data)
+        
+
+        #mi_pandas, st_pandas, post_pandas
+        print(mi_pandas.columns)
+        
+        lat_upper = float(room_detail['latitude'])+0.01
+        lat_lower = float(room_detail['latitude'])-0.01
+        
+        #lng_upper = 
+        
         return jsonify({'single_detail':room_detail,'recommendation': output})
 
     @api.response(200, 'Successful')
