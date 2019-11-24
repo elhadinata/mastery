@@ -1,0 +1,359 @@
+get /userlist
+401 ok
+200 ok
+403 ok
+
+###############################################################
+
+
+post /user_register
+200 ok
+401 ok
+
+###############################################################
+
+
+get /user/{public_id}
+401 ok
+200 ok
+403 ok
+
+###############################################################
+
+
+get /unsubscribe/{public_id}
+401 ok
+200 ok
+403 ok
+
+
+###############################################################
+
+get /token
+200 ok
+401 ok
+
+
+###############################################################
+
+
+get /subscribe/{public_id}
+200 ok
+401 ok
+403 ok
+404 ok
+###############################################################
+
+
+get /statistics
+401 ok
+200 ok
+403 ok
+###############################################################
+
+
+post /search
+401 ok
+200 ok
+403 ok
+406 ok
+###############################################################
+
+
+PUT /priceadvice
+200 ok
+400 ?
+401 ok
+406 ok
+###############################################################
+
+
+DELETE /owner/bookings/{id}
+
+id = 5
+
+Code  Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+Response headers
+
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: booking
+[SQL: SELECT booking.id AS booking_id, booking.owner_id AS booking_owner_id, booking.listing_id AS booking_listing_id, booking.renter_id AS booking_renter_id, booking.start_date AS booking_start_date, booking.end_date AS booking_end_date
+FROM booking
+WHERE booking.owner_id = ? AND booking.listing_id = ?]
+[parameters: ('d2505c4e-8733-4cfd-ac38-e89d3740bbbb', 5)]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+127.0.0.1 - - [24/Nov/2019 12:58:50] "DELETE /owner/bookings/5 HTTP/1.1" 500 -
+
+
+
+200
+401 ok
+
+###############################################################
+
+
+GET /owner/bookings
+
+Code  Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+
+[SQL: SELECT booking.id AS booking_id, booking.owner_id AS booking_owner_id, booking.listing_id AS booking_listing_id, booking.renter_id AS booking_renter_id, booking.start_date AS booking_start_date, booking.end_date AS booking_end_date
+FROM booking
+WHERE booking.owner_id = ?]
+[parameters: ('d2505c4e-8733-4cfd-ac38-e89d3740bbbb',)]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+127.0.0.1 - - [24/Nov/2019 12:44:09] "GET /owner/bookings HTTP/1.1" 500 -
+
+
+
+200 ?
+401 ok
+
+
+
+###############################################################
+
+
+DELETE /book/{id}
+
+input id = 5
+
+
+Code  Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: booking
+[SQL: SELECT booking.id AS booking_id, booking.owner_id AS booking_owner_id, booking.listing_id AS booking_listing_id, booking.renter_id AS booking_renter_id, booking.start_date AS booking_start_date, booking.end_date AS booking_end_date
+FROM booking
+WHERE booking.owner_id = ? AND booking.listing_id = ?]
+[parameters: ('d2505c4e-8733-4cfd-ac38-e89d3740bbbb', 5)]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+127.0.0.1 - - [24/Nov/2019 12:39:58] "DELETE /owner/bookings/5 HTTP/1.1" 500 -
+
+
+
+
+
+
+204 ?
+401 ok
+
+###############################################################
+
+POST /book/{id}
+
+input =
+{
+  "start_date": "2017-09-09",
+  "end_date": "2020-09-09"
+}
+
+id = 4
+
+
+Code  Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+e-packages/sqlalchemy/engine/default.py", line 581, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: booking
+[SQL: INSERT INTO booking (owner_id, listing_id, renter_id, start_date, end_date) VALUES (?, ?, ?, ?, ?)]
+[parameters: ('367042', 4, 'd2505c4e-8733-4cfd-ac38-e89d3740bbbb', '2017-09-09', '2020-09-09')]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+127.0.0.1 - - [24/Nov/2019 12:38:59] "POST /book/4 HTTP/1.1" 500 -
+
+
+
+
+201 ?
+401 ok
+406 ok
+
+###############################################################
+
+GET /book
+
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+
+-packages/sqlalchemy/engine/default.py", line 581, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: booking
+[SQL: SELECT booking.id AS booking_id, booking.owner_id AS booking_owner_id, booking.listing_id AS booking_listing_id, booking.renter_id AS booking_renter_id, booking.start_date AS booking_start_date, booking.end_date AS booking_end_date
+FROM booking
+WHERE booking.renter_id = ?]
+[parameters: ('d2505c4e-8733-4cfd-ac38-e89d3740bbbb',)]
+(Background on this error at: http://sqlalche.me/e/e3q8)
+127.0.0.1 - - [24/Nov/2019 12:36:44] "GET /book HTTP/1.1" 500 -
+
+
+200 ?
+401 ok
+
+###############################################################
+
+
+GET /accommodation/{id}/details
+
+
+input = 999999
+
+Code	Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+packages/pandas/core/indexes/base.py", line 2899, in get_loc
+    return self._engine.get_loc(self._maybe_cast_indexer(key))
+  File "pandas/_libs/index.pyx", line 107, in pandas._libs.index.IndexEngine.get_loc
+
+  File "pandas/_libs/index.pyx", line 131, in pandas._libs.index.IndexEngine.get_loc
+
+  File "pandas/_libs/hashtable_class_helper.pxi", line 992, in pandas._libs.hashtable.Int64HashTable.get_item
+
+  File "pandas/_libs/hashtable_class_helper.pxi", line 998, in pandas._libs.hashtable.Int64HashTable.get_item
+
+KeyError: 999998
+
+
+200
+401 ok
+###############################################################
+
+DELETE /accommodation/{id}
+
+  input id = 4
+
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask_restplus/api.py", line 325, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask_restplus/resource.py", line 44, in dispatch_request
+    resp = meth(*args, **kwargs)
+TypeError: delete() got an unexpected keyword argument 'id'
+  500
+  Undocumented
+  Error: INTERNAL SERVER ERROR
+
+200 ?
+400 ?
+401 ?
+###############################################################
+
+PUT /accommodation/{id}
+
+
+
+input = {
+  "name": "string",
+  "location": "string",
+  "area": "string",
+  "latitude": "string",
+  "longitude": "string",
+  "room_type": "string",
+  "minimum_nights": "string",
+  "availability_365": "string"
+}
+id = 2
+
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+Response body
+Download
+{
+  "message": "Internal Server Error"
+}
+    resp = resource(*args, **kwargs)
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask_restplus/resource.py", line 44, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/ricky/Desktop/swagger/mastery/app/routes.py", line 534, in put
+    neighbourhood_group =data['neighbourhood_group']
+KeyError: 'neighbourhood_group'
+127.0.0.1 - - [24/Nov/2019 12:34:34] "PUT /accommodation/2 HTTP/1.1" 500 -
+
+
+
+200 ?
+400 ?
+401 ok
+###############################################################
+
+GET /accommodation/{id}
+200 ok
+401 ok
+
+###############################################################
+
+POST /accommodation
+
+
+input = {
+  "name": "string",
+  "location": "string",
+  "area": "string",
+  "latitude": "string",
+  "longitude": "string",
+  "room_type": "string",
+  "minimum_nights": "string",
+  "availability_365": "string"
+}
+
+
+Code	Details
+500
+Undocumented
+Error: INTERNAL SERVER ERROR
+
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/ricky/.local/share/virtualenvs/mastery-vqwY7b9I/lib/python3.7/site-packages/flask_restplus/resource.py", line 44, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/ricky/Desktop/swagger/mastery/app/routes.py", line 671, in post
+    neighbourhood_group =data['neighbourhood_group']
+KeyError: 'neighbourhood_group'
+
+
+200 ?
+400 ?
+401 ok
+
+
+
+
+
