@@ -266,11 +266,7 @@ class SearchRoom(Resource):
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         # if not current_user.admin:
         #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
-<<<<<<< HEAD
-        #print(current_user)
-=======
-       
->>>>>>> f1ec0a31ec57dcaec612614e272ec5240d561d80
+
         data = request.get_json()
         location = data['location']
         area = data['area']
