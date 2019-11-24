@@ -707,7 +707,7 @@ class UserAccomodation(Resource):
             return "Listing does not exist"
         res.delete()
         db.session.commit()
-        return {"message": "Deleted the post with id {}".format(id)}, 200
+        return make_response({"message": "Deleted the post with id {}".format(id)}, 200)
 
 @api.route('/statistics')
 class SearchStatistics(Resource):
@@ -746,7 +746,7 @@ class SearchStatistics(Resource):
             op_data['price_2'] = op.price_2
             op_data['time'] = op.time_stamp
             output.append(op_data)
-        return jsonify({'users': output})
+        return make_response(jsonify({'users': output}), 200)
 
 
 @api.route('/accommodation')
@@ -825,7 +825,7 @@ class Accomodation(Resource):
         db.session.commit()
         global mi_pandas, st_pandas, post_pandas
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
-        return jsonify({ "message": "Successful" })
+        return make_response(jsonify({ "message": "Successful" }), 200)
 
 
 @api.route('/subscribe/<public_id>')
@@ -855,7 +855,7 @@ class SubscribeUser(Resource):
             return make_response('message', 403, {'User': 'Cannot subscribe yourself'})
         current_user.follow(user)
         db.session.commit()
-        return jsonify({ "message": "Successfully subscribed"}), 200
+        return make_response(jsonify({ "message": "Successfully subscribed"}), 200)
 
 
 @api.route('/unsubscribe/<public_id>')
@@ -884,7 +884,7 @@ class UnSubscribeUser(Resource):
             return make_response('message', 403, {'User': 'Cannot unsubscribe from yourself'})
         current_user.unfollow(user)
         db.session.commit()
-        return jsonify({ "message": "Successfully unsubscribed"}), 200
+        return make_response(jsonify({ "message": "Successfully unsubscribed"}), 200)
 
 
 @app.route('/makepay/<int:id>', methods=['POST'])
@@ -965,7 +965,7 @@ class GetBooking(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         booking = Booking.query.filter_by(renter_id=current_user.public_id).all()    
-        return jsonify(booking=[i.serialize for i in booking])
+        return make_response(jsonify(booking=[i.serialize for i in booking]), 200)
 
 
 book_model = api.model('booking', {
@@ -1072,7 +1072,7 @@ class GetOwnerBookings(Resource):
         owner_id = request.form.get('owner_id')
         booking = Booking.query.filter_by(owner_id=current_user.public_id).all()
         if len(booking) == 0:
-            return make_response(jsonify({ "message" : "No bookings found" }), 200)
+            return make_response(jsonify({ "message" : "No bookings found" }), 404)
         return make_response(jsonify(booking=[i.serialize for i in booking]), 200)
 
 
@@ -1104,4 +1104,4 @@ class CancelOwnerBookings(Resource):
         tmp = Booking.query.filter_by(id=booking_id)
         tmp.delete()
         db.session.commit()
-        return {"message":"Deleted booking of accomodation with listing_id of {}".format(id)}, 200
+        return make_response({"message":"Deleted booking of accomodation with listing_id of {}".format(id)}, 200)
