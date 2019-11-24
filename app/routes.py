@@ -746,7 +746,7 @@ class SubscribeUser(Resource):
         if user is None:
             return make_response('message', 404, {'User': 'User does not exist'})
         if user == current_user:
-            return make_response('message', 403, {'User': 'Cannot unsubscribe to yourself'})
+            return make_response('message', 403, {'User': 'Cannot subscribe yourself'})
         current_user.follow(user)
         db.session.commit()
         return jsonify({ "message": "Successfully subscribed"}), 200
@@ -890,10 +890,12 @@ class MakeBooking(Resource):
         if end_date == "":
             end_date = "2021-01-01"
 
-        time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
-        time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
-        duration = int((time_e - time_s) / 86400)
-
+        try:
+            time_s = time.mktime(time.strptime(start_date, "%Y-%m-%d"))
+            time_e = time.mktime(time.strptime(end_date, "%Y-%m-%d"))
+            duration = int((time_e - time_s) / 86400)
+        except:
+            return make_response('message', 406, {'Date': 'Format should be %Y-%m-%d'})
         if duration < int(owner_post.first().minimum_nights):
             return make_response('message', 406, {'Date': 'Length of stay below requirement'})
         
