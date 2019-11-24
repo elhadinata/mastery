@@ -263,7 +263,6 @@ class SearchRoom(Resource):
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
         # if not current_user.admin:
         #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
@@ -310,7 +309,7 @@ class SearchRoom(Resource):
             
 
             if len(qq) == 0:
-                return make_response('Not found', 404, {'value': 'cannot find any room according to hte input'})
+                return make_response('Not found', 404, {'value': 'cannot find any room according to the input'})
 
         except:
             return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room, guest number should be integer '})
@@ -625,6 +624,8 @@ class UserAccomodation(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
+        print("HERE0")
+
         try:
             data = request.get_json()
             name = data['name']
@@ -639,11 +640,12 @@ class UserAccomodation(Resource):
             minimum_nights = int(data['minimum_nights'])
             number_of_reviews = int(data['number_of_reviews'])
             last_review = data['last_review']
-            reviews_per_month = float(['reviews_per_month'])
+            reviews_per_month = float(data['reviews_per_month'])
             calculated_host_listings_count = int(data['calculated_host_listings_count'])
             availability_365 = int(data['availability_365'])
         except:
             return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
+        
         res = Df.query.filter_by(host_id=current_user.public_id, id=id)
         if len(res.all()) == 0:
             return make_response('message', 404, {'Accomodation': 'Not found!'})
