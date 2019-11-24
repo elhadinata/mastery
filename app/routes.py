@@ -416,16 +416,14 @@ class PricePrediction(Resource):
         try:
             query = {}
             query['name'] = data['name']
-            query['neighbourhood_group'] =data['location']
-            query['neighbourhood'] = data['area']
+            query['neighbourhood_group'] =data['neighbourhood_group']
+            query['neighbourhood'] = data['neighbourhood']
             query['latitude'] = float(data['latitude'])
             query['longitude'] = float(data['longitude'])
             query['room_type'] = data['room_type']
             query['minimum_nights'] = int(data['minimum_nights'])
             query['availability_365'] = int(data['availability_365'])
             
-           
-
             ml_model = ML_model()
             ml_model.prep_price_preds(post_pandas)
             if data['room_type'] =="":
