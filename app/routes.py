@@ -262,9 +262,9 @@ class SearchRoom(Resource):
                 public_id=data['public_id']).first()
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
-        if not current_user.admin:
-            return make_response('message', 403, {'Username': 'need admin user to perform function'})
-
+        # if not current_user.admin:
+        #     return make_response('message', 403, {'Username': 'need admin user to perform function'})
+        #print(current_user)
         data = request.get_json()
         location = data['location']
         area = data['area']
@@ -274,9 +274,11 @@ class SearchRoom(Resource):
         guest = data['guest']
         price_1 = data['price_1']
         price_2 = data['price_2']
+        station = data['station']
         temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2
                     }
+
         if start_date == "":
             start_date = "1970-01-01"
         if end_date == "":
@@ -299,12 +301,19 @@ class SearchRoom(Resource):
                         (Df.price >= int(price_1)),
                         (Df.price <= int(price_2))
                             ).all()
+            sss = Station.query.filter(Station.station_name.ilike("%" + station + "%")).all()
+            
+
         except:
             return make_response('Format error', 406, {'value': 'format is Date: year-month-day, Price: integer, Room type:Private room '})
 
         final_res = []
+        temp_counter = 0
 
         for dd in qq:
+            if temp_counter > 50:
+                break
+            
             his_rec = {}
 
             his_rec['id'] = dd.id
@@ -323,8 +332,52 @@ class SearchRoom(Resource):
             his_rec['reviews_per_month'] = dd.reviews_per_month
             his_rec['calculated_host_listings_count'] = dd.calculated_host_listings_count
             his_rec['availability_365'] = dd.availability_365
-            final_res.append(his_rec)
 
+
+            mi_lat_upper = float(his_rec['latitude'])+0.04
+            mi_lat_lower = float(his_rec['latitude'])-0.04
+            mi_lng_upper = float(his_rec['longitude'])+0.04
+            mi_lng_lower = float(his_rec['longitude'])-0.04
+            
+            mi_pandas['latitude'] = pd.to_numeric(mi_pandas['latitude'])
+            mi_pandas['longitude'] = pd.to_numeric(mi_pandas['longitude'])
+            mi_lat_upper = mi_pandas[mi_pandas['latitude']<mi_lat_upper].copy()
+            mi_lat_lower = mi_lat_upper[mi_lat_upper['latitude']>mi_lat_lower].copy()
+            mi_lng_upper = mi_lat_lower[mi_lat_lower['longitude']<mi_lng_upper].copy()
+            mi_lng_lower = mi_lng_upper[mi_lng_upper['longitude']>mi_lng_lower].copy()
+            
+            mi_listing = mi_lng_lower.T.to_dict().values()
+            
+            st_lat_upper = float(his_rec['latitude'])+0.01
+            st_lat_lower = float(his_rec['latitude'])-0.01
+            st_lng_upper = float(his_rec['longitude'])+0.01
+            st_lng_lower = float(his_rec['longitude'])-0.01
+            st_pandas['latitude'] = pd.to_numeric(st_pandas['latitude'])
+            st_pandas['longitude'] = pd.to_numeric(st_pandas['longitude'])
+            st_lat_upper = st_pandas[st_pandas['latitude']<st_lat_upper].copy()
+            st_lat_lower = st_lat_upper[st_lat_upper['latitude']>st_lat_lower].copy()
+            st_lng_upper = st_lat_lower[st_lat_lower['longitude']<st_lng_upper].copy()
+            st_lng_lower = st_lng_upper[st_lng_upper['longitude']>st_lng_lower].copy()
+
+
+            if station == "":
+                final_res.append(his_rec)
+                temp_counter += 1
+            else:
+                sta_list = []
+
+                for ss in sss:
+                    sta_list.append(ss.station_name)
+
+                st_listing = st_lng_lower.T.to_dict().values()
+                
+                _temp_list = list(st_listing)
+                if len(_temp_list) > 0:
+                    for temp in _temp_list:
+                        if temp['station_name'] in sta_list:
+                            final_res.append(his_rec)
+                            temp_counter += 1
+                            break
         # first add a admin manully that control other user
         new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
@@ -332,6 +385,7 @@ class SearchRoom(Resource):
         db.session.add(new_op)
         db.session.commit()
         return make_response(jsonify(final_res), 200)
+
 
 
 
@@ -819,13 +873,23 @@ class UnSubscribeUser(Resource):
         return jsonify({ "message": "Successfully unsubscribed"}), 200
 
 
-@app.route('/makepay')
-def makepay():
-    return render_template('makepay.html')
+@app.route('/makepay/<int:id>', methods=['POST'])
+def makepay(id):
+    id = request.form.get('id')
+    return render_template('makepay.html', data=id)
 
 
-@app.route('/payment', methods=['POST'])
-def payment():
+@app.route('/payment/<int:id>', methods=['POST'])
+def payment(id):
+    try:
+        booking = Booking.query.filter_by(listing_id=id).all()[-1]
+        listing = Df.query.filter_by(id=id).first()
+        time_s = time.mktime(time.strptime(booking.start_date, "%Y-%m-%d"))
+        time_e = time.mktime(time.strptime(booking.end_date, "%Y-%m-%d"))
+        duration = int((time_e - time_s) / 86400)
+        subtotal = duration * listing.price
+    except:
+        return make_response('Message',406, {'error':'Invalid booking'})
     payment = paypalrestsdk.Payment({
         "intent": "sale",
         "payer": {
@@ -836,13 +900,13 @@ def payment():
         "transactions": [{
             "item_list": {
                 "items": [{
-                    "name": "testitem",
+                    "name": f"{str(listing.name)}",
                     "sku": "12345",
-                    "price": "20.00",
+                    "price": f"{str(subtotal)}",
                     "currency": "USD",
                     "quantity": 1}]},
             "amount": {
-                "total": "20.00",
+                "total": f"{str(subtotal)}",
                 "currency": "USD"},
             "description": "This is the payment transaction description."}]})
 
