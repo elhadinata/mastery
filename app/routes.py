@@ -123,9 +123,8 @@ class UserRegister(Resource):
         print(name+' '+password)
         user = User.query.filter_by(name = name).first()
         if user:
-            return make_response('Repeat Username!', 401, {'Username': 'username conflict!"'})
-       
-
+            return make_response('Username already exists!', 401, {'Username': 'username already exists!"'})
+        
         hashed_password = generate_password_hash(password, method='sha256')
         new_user = User(public_id=str(uuid.uuid4()), name=name, password=hashed_password, admin=True)
         db.session.add(new_user)
@@ -663,27 +662,6 @@ class Accomodation(Resource):
             current_user = User.query.filter_by(
                 public_id=data['public_id']).first()
         except:
-<<<<<<< HEAD
-            return make_response(jsonify({'message': 'Token is invalid'}), 401)
-
-        location = request.form.get('location')
-        area = request.form.get('area')
-        type_room = request.form.get('type_room')
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
-        guest = request.form.get('guest')
-        price_1 = request.form.get('price_1')
-        price_2 = request.form.get('price_2')
-        _uid = current_user.public_id
-        temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-                     'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-                     'user_id': _uid}
-
-        # first add a admin manully that control other user
-        new_op = Oprecord(user_id=current_user.public_id, location=location, area=area,
-                           type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-                           price_1=price_1, price_2=price_2)
-=======
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
         data = request.get_json()
@@ -732,7 +710,6 @@ class Accomodation(Resource):
         , reviews_per_month=reviews_per_month
         , calculated_host_listings_count=calculated_host_listings_count
         , availability_365=availability_365)
->>>>>>> swagger-merge
         db.session.add(new_op)
         db.session.commit()
         global mi_pandas, st_pandas, post_pandas
@@ -740,112 +717,6 @@ class Accomodation(Resource):
         return jsonify({ "message": "Successful" })
 
 
-<<<<<<< HEAD
-        return jsonify(temp_dic)
-
-@app.route('/owner_post', methods=['POST'])
-@token_required
-def owner_post(current_user):
-    #para
-    location = request.form.get('location')
-    area = request.form.get('area')
-    type_room = request.form.get('type_room')
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    guest = request.form.get('guest')
-    price_1 = request.form.get('price_1')
-    price_2 = request.form.get('price_2')
-    if(request.form.get('Available')=='True'):
-        available=True
-    else:
-        available=False
-    _uid = current_user.public_id
-    temp_dic = {'location': location, 'area': area, 'type_room': type_room, 'start_date': start_date,
-                'end_date': end_date, 'guest': guest, 'price_1': price_1, 'price_2': price_2,
-                'user_id': _uid}
-
-    # first add a admin manully that control other user
-    new_op = OwnerPost(user_id=current_user.public_id, location=location, area=area,
-                        type_room=type_room, start_date=start_date, end_date=end_date, guest=guest,
-                        price_1=price_1, price_2=price_2, Available=available)
-    db.session.add(new_op)
-    db.session.commit()
-
-    return jsonify(new_op.__repr__())
-
-@app.route('/owner_get', methods=['GET'])
-@token_required
-def owner_get(current_user):
-    records = OwnerPost.query.filter_by(user_id=current_user.public_id).all()
-    return jsonify(records=[i.serialize for i in records])
-
-@app.route('/owner_remove/<id>', methods=['POST'])
-@token_required
-def remove_listing(current_user, id):
-    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res.delete()
-    db.session.commit()
-    return "Deleted the post with id {}".format(id)
-
-@app.route('/owner_edit/<id>', methods=['PUT'])
-@token_required
-def edit_listing(current_user, id):
-    res = OwnerPost.query.filter_by(user_id=current_user.public_id, id=id)
-    if len(res.all()) == 0:
-        return "Listing does not exist"
-    res = res.first()
-    location = request.form.get('location')
-    area = request.form.get('area')
-    type_room = request.form.get('type_room')
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    guest = request.form.get('guest')
-    price_1 = request.form.get('price_1')
-    price_2 = request.form.get('price_2')
-    available = request.form.get('Available')
-
-    res.location = location
-    res.area = area
-    res.type_room = type_room
-    res.start_date = start_date
-    res.end_date = end_date
-    res.guest = guest
-    res.price_1 = price_1
-    res.price_2 = price_2
-    res.available = available
-
-    db.session.commit()
-    return "Edited the post with id {}".format(id)
-
-#put the public_id you want to subscribe
-@app.route('/subscribe/<public_id>')
-@token_required
-def subscribe(current_user, public_id):
-    user = User.query.filter_by(public_id=public_id).first()
-    if user is None:
-        return "user not exist"
-    if user == current_user:
-        return "wait, are you subscribe yourself?"
-    current_user.follow(user)
-    db.session.commit()
-    return "success!"
-
-
-#put the public_id you want to unsubscribe
-@app.route('/unsubscribe/<public_id>')
-@token_required
-def unsubscribe(current_user, public_id):
-    user = User.query.filter_by(public_id=public_id).first()
-    if user is None:
-        return "user not exist"
-    if user == current_user:
-        return "wait, are you unsubscribe yourself?"
-    current_user.unfollow(user)
-    db.session.commit()
-    return "unscribe success"
-=======
 @api.route('/subscribe/<public_id>')
 class SubscribeUser(Resource):
     @api.response(200, 'Successful')
@@ -903,7 +774,6 @@ class UnSubscribeUser(Resource):
         current_user.unfollow(user)
         db.session.commit()
         return jsonify({ "message": "Successfully unsubscribed"}), 200
->>>>>>> swagger-merge
 
 
 @app.route('/makepay')
