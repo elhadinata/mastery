@@ -733,7 +733,7 @@ class SearchStatistics(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-        if not curre10nt_user.admin:
+        if not current_user.admin:
             return make_response('message', 403, {'Username': 'Admin priviledges required to perform action'})
         ops = Oprecord.query.all()
         output = []
