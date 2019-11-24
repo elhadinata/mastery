@@ -625,7 +625,9 @@ class UserAccomodation(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
+
         try:
+
             data = request.get_json()
             name = data['name']
             host_id = current_user.public_id
@@ -634,12 +636,13 @@ class UserAccomodation(Resource):
             neighbourhood = data['neighbourhood']
             latitude = float(data['latitude'])
             longitude = float(data['longitude'])
+
             room_type = data['room_type']
             price = float(data['price'])
             minimum_nights = int(data['minimum_nights'])
             number_of_reviews = int(data['number_of_reviews'])
             last_review = data['last_review']
-            reviews_per_month = float(['reviews_per_month'])
+            reviews_per_month = float(data['reviews_per_month'])
             calculated_host_listings_count = int(data['calculated_host_listings_count'])
             availability_365 = int(data['availability_365'])
         except:
@@ -686,7 +689,7 @@ class UserAccomodation(Resource):
 
 
     @api.response(200, 'Successful')
-    @api.response(400, 'Failed')
+    @api.response(404, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
     @api.doc(description="Remove an accommodation.\ne.g. input: room id: 5\n e.g. output: Successful")
     def delete(self,id):
@@ -704,7 +707,8 @@ class UserAccomodation(Resource):
 
         res = Df.query.filter_by(id=id, host_id=current_user.public_id)
         if len(res.all()) == 0:
-            return "Listing does not exist"
+            return make_response('message', 404, {'Username': 'Listing does not exist!'})
+            
         res.delete()
         db.session.commit()
         return {"message": "Deleted the post with id {}".format(id)}, 200
