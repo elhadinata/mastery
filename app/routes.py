@@ -414,7 +414,7 @@ owner_model = api.model('accomodation', {
     'price' :fields.String,
 })
 
-price_pred_model = api.model('accomodation', {
+price_pred_model = api.model('price', {
     'name': fields.String,
     'location': fields.String,
     'area': fields.String,
@@ -609,7 +609,8 @@ class UserAccomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
-    @api.doc(description="Post a new accommodation listing.\ne.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B  Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room\n e.g. output: Successful")
+    @api.response(406, 'Input format error')
+    @api.doc(description="Modify an accommodation listing.\ne.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B  Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room\n e.g. output: Successful")
     @api.expect(owner_model)
     def put(self, id):
         token = None
@@ -624,24 +625,25 @@ class UserAccomodation(Resource):
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
 
-
-        data = request.get_json()
-        name = data['name']
-        host_id = current_user.public_id
-        host_name = current_user.name
-        neighbourhood_group =data['neighbourhood_group']
-        neighbourhood = data['neighbourhood']
-        latitude = data['latitude']
-        longitude = data['longitude']
-        room_type = data['room_type']
-        price = data['price']
-        minimum_nights = data['minimum_nights']
-        number_of_reviews = data['number_of_reviews']
-        last_review = data['last_review']
-        reviews_per_month = data['reviews_per_month']
-        calculated_host_listings_count = data['calculated_host_listings_count']
-        availability_365 = data['availability_365']
-        
+        try:
+            data = request.get_json()
+            name = data['name']
+            host_id = current_user.public_id
+            host_name = current_user.name
+            neighbourhood_group =data['neighbourhood_group']
+            neighbourhood = data['neighbourhood']
+            latitude = float(data['latitude'])
+            longitude = float(data['longitude'])
+            room_type = data['room_type']
+            price = float(data['price'])
+            minimum_nights = int(data['minimum_nights'])
+            number_of_reviews = int(data['number_of_reviews'])
+            last_review = data['last_review']
+            reviews_per_month = float(['reviews_per_month'])
+            calculated_host_listings_count = int(data['calculated_host_listings_count'])
+            availability_365 = int(data['availability_365'])
+        except:
+            return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
         res = Df.query.filter_by(host_id=current_user.public_id, id=id)
         if len(res.all()) == 0:
             return make_response('message', 404, {'Accomodation': 'Not found!'})
@@ -752,6 +754,7 @@ class Accomodation(Resource):
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
     @api.response(401, 'Token is missing or Invalid')
+    @api.response(406, 'Input format error')
     @api.doc(description="Post a new accommodation listing.\ne.g. input: availability_365: 355, calculated_host_listings_count: 9, host_id: 367042, host_name: Belinda, id: 5, last_review: 2019-07-28, latitude: 1.3456700000000001, longitude: 103.95963, minimum_nights: 1, name: B&B  Room 1 near Airport & EXPO, neighbourhood: Tampines, neighbourhood_group: East Region, number_of_reviews: 22, price: 94, reviews_per_month: 0.22, room_type: Private room\n e.g. output: Successful")
     @api.expect(owner_model)
     def post(self):
@@ -766,24 +769,29 @@ class Accomodation(Resource):
                 public_id=data['public_id']).first()
         except:
             return make_response('message', 401, {'Username': 'Token is Invalid!'})
-
-        data = request.get_json()
-        name = data['name']
-        host_id = current_user.public_id
-        host_name = current_user.name
-        neighbourhood_group =data['neighbourhood_group']
-        neighbourhood = data['neighbourhood']
-        latitude = data['latitude']
-        longitude = data['longitude']
-        room_type = data['room_type']
-        price = data['price']
-        minimum_nights = data['minimum_nights']
-        number_of_reviews = data['number_of_reviews']
-        last_review = data['last_review']
-        reviews_per_month = data['reviews_per_month']
-        calculated_host_listings_count = data['calculated_host_listings_count']
-        availability_365 = data['availability_365']
-        
+        try:
+            data = request.get_json()
+            name = data['name']
+            host_id = current_user.public_id
+            host_name = current_user.name
+            neighbourhood_group =data['neighbourhood_group']
+            neighbourhood = data['neighbourhood']
+            latitude = float(data['latitude'])
+            longitude = float(data['longitude'])
+            room_type = data['room_type']
+            price = float(data['price'])
+            minimum_nights = int(data['minimum_nights'])
+            #number_of_reviews = 0
+            number_of_reviews = int(data['number_of_reviews'])
+            #last_review = 0
+            last_review = data['last_review']
+            #reviews_per_month = 0
+            reviews_per_month = float(data['reviews_per_month'])
+            #calculated_host_listings_count =0
+            calculated_host_listings_count = int(data['calculated_host_listings_count'])
+            availability_365 = int(data['availability_365'])
+        except:
+            return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
         
         temp_dic = {'name': name, 'host_id': host_id
                     , 'neighbourhood_group': neighbourhood_group
