@@ -31,7 +31,8 @@ search_model = api.model('airbnb search', {
 	'end_date': fields.String,
 	'guest': fields.String,
 	'price_1': fields.String,
-	'price_2': fields.String
+	'price_2': fields.String,
+	'station': fields.String
 	})
 
 

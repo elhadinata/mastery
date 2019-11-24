@@ -239,7 +239,8 @@ search_model = api.model('search', {
     'end_date' : fields.String,
     'guest': fields.String,
     'price_1': fields.String,
-    'price_2': fields.String
+    'price_2': fields.String,
+    'station': fields.String
 })
 
 @api.route('/search')
@@ -249,7 +250,7 @@ class SearchRoom(Resource):
     @api.response(403, 'Forbidden : Need ADMIN')
     @api.response(404, 'Room not found')
     @api.response(406, 'Input format error')
-    @api.doc(description="Search for the room you are interested, you can leave the box empty if you like.\n e.g. input: location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200\ne.g. output: ...")
+    @api.doc(description="Search for the room you are interested, you can leave the box empty if you like.\n e.g. input: location:'Central Region', area:'Queenstown', type_room:'Private room', start_Date:'', end_date:'',price_1:10, price_2:200, station: Newton\ne.g. output: ...\nIf user add station field, the backend will return the room which have that station name nearby\n")
     @api.expect(search_model)
     def post(self):
         token = None
