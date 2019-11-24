@@ -48,3 +48,15 @@ following step for first create sqlite db
 if there is a file called 9321.db then following step is not necessary
 python3 from app import db
 >>>db.create_all()
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# mastery-frontend
+1. Clone repo
+2. Go inside the repo
+3. Run: npm install
+4. Run: live-server
+5. install this chrome plugin https://mybrowseraddon.com/access-control-allow-origin.html
+6. Activate the plugin to allow CORS
+7. Ready
