@@ -438,7 +438,7 @@ class PricePrediction(Resource):
             #print(result)
             lower = int(result[0])-15
             upper = int(result[0])+15 
-            return jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper })
+            return make_response(jsonify({'message':"suggested price range:",'price_range_lower': lower,'price_range_upper':upper }), 200)
 
         except:
             return make_response('Format error', 406, {'value': "format is location: 'Central Region' etc., area: 'Queenstown' etc., Room type:'Private room', 'Entire home/apt', 'Shared room', minimum_nights and availability_365 shoule be integers"})
@@ -542,7 +542,7 @@ class UserAccomodation(Resource):
         st_listing = st_lng_lower.T.to_dict().values()
         
         print(list(st_listing))
-        return jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)})
+        return make_response(jsonify({'single_detail':room_detail,'recommendation': output,'mi_listing':list(mi_listing),'st_listing':list(st_listing)}), 200)
 
     @api.response(200, 'Successful')
     @api.response(400, 'Failed')
@@ -618,7 +618,7 @@ class UserAccomodation(Resource):
         global mi_pandas, st_pandas, post_pandas
         mi_pandas, st_pandas, post_pandas = get_data_cluster()
         
-        return { "message": "Successfully Updated" }, 200
+        return make_response({ "message": "Successfully Updated" }, 200)
 
 
     @api.response(200, 'Successful')
