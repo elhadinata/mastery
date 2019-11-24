@@ -121,6 +121,8 @@ class UserRegister(Resource):
         password = data['password']
         name = data['username']
         print(name+' '+password)
+        if name == '' or password == '':
+            return make_response('Name or Password cannot be empty', 401)
         user = User.query.filter_by(name = name).first()
         if user:
             return make_response('Username already exists!', 401, {'Username': 'username already exists!"'})
