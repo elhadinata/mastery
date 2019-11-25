@@ -24,7 +24,7 @@
 <ul>
     <li>
         <h1>Login</h1>
-        <p>Log in with the generated authentication token. Please login using your username and password and get the token.</p>
+        <p>Log in with the generated authentication token. Please login using your username and password and getting the token.</p>
         <div class="content">
             <form class="ui form" id="login-form">
                 <div class="field">
@@ -42,7 +42,7 @@
     </li>
     <li>
         <h1>Register</h1>
-        <p>User registration. Please enter your username and password.</p>
+        <p>User registration. Please enter your username and password. Username and password should have more than 4 characters.</p>
         <div class="content">
             <form class="ui form" action="/user_register" id="register-form">
                 <div class="field">
@@ -60,7 +60,7 @@
 
     <li>
         <h1>Search</h1>
-        <p>Search for the room you are interested, you can leave the box empty if you like. If user add station field, the backend will return the room which have that station name nearby.</p>
+        <p>Search for the room you are interested, you can leave the box empty if you like. If user adds input of the station field, the backend will return the rooms near that station.</p>
         <div class="text container" id="search">
             Search for Accomodation
             <form class="ui form" id="search-form" action="/search" method="post">
@@ -131,6 +131,7 @@
     </li>
     <li>
         <h1>Search Result</h1>
+        <p>You can click the room name to get its details and a recommendation of similar rooms.</p>
         <div class="text container">
             <ul id="search-result">
 
@@ -458,6 +459,7 @@
 
     <li>
         <h1>Users List</h1>
+        <p>Get all the registered users, this function requires admin access.</p>
         <div class="text container">
             <button type="button" id="btn-users">Get User List</button>
             <ul id="users-list">
